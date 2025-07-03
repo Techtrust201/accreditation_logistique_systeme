@@ -68,7 +68,7 @@ export default function LogisticienLayout({
               </li>
               <li>
                 <Link
-                  href="/accreditation?step=1"
+                  href="/logisticien/nouveau?step=1"
                   className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/10"
                 >
                   <Image

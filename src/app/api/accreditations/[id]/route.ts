@@ -1,13 +1,15 @@
 import { NextRequest } from "next/server";
-import { readAccreditations, writeAccreditations } from "@/lib/store";
+import prisma from "@/lib/prisma";
 import type { AccreditationStatus } from "@/types";
 
 export async function GET(
   _: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const list = await readAccreditations();
-  const acc = list.find((a) => a.id === params.id);
+  const acc = await prisma.accreditation.findUnique({
+    where: { id: params.id },
+    include: { vehicles: true },
+  });
   if (!acc) return new Response("Not found", { status: 404 });
   return Response.json(acc);
 }
@@ -16,25 +18,41 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const list = await readAccreditations();
-  const acc = list.find((a) => a.id === params.id);
+  const acc = await prisma.accreditation.findUnique({
+    where: { id: params.id },
+  });
   if (!acc) return new Response("Not found", { status: 404 });
 
   const { status }: { status?: AccreditationStatus } = await req.json();
-  if (!status || !["ATTENTE", "ENTREE", "SORTIE"].includes(status)) {
+  if (
+    !status ||
+    !["ATTENTE", "ENTREE", "SORTIE", "NOUVEAU", "REFUS", "ABSENT"].includes(
+      status
+    )
+  ) {
     return new Response("Invalid status", { status: 400 });
   }
 
-  if (status === acc.status) {
-    return Response.json(acc); // rien à faire
+  const updates: Partial<{
+    status: AccreditationStatus;
+    entryAt?: Date;
+    exitAt?: Date;
+  }> = {
+    status,
+  };
+
+  if (status === "ENTREE" && !acc.entryAt) {
+    updates.entryAt = new Date();
+  }
+  if (status === "SORTIE" && !acc.exitAt) {
+    updates.exitAt = new Date();
   }
 
-  // gestion des timestamps
-  if (status === "ENTREE" && !acc.entryAt)
-    acc.entryAt = new Date().toISOString();
-  if (status === "SORTIE" && !acc.exitAt) acc.exitAt = new Date().toISOString();
-  acc.status = status;
+  const updated = await prisma.accreditation.update({
+    where: { id: params.id },
+    data: updates,
+    include: { vehicles: true },
+  });
 
-  await writeAccreditations(list);
-  return Response.json(acc);
+  return Response.json(updated);
 }

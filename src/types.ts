@@ -30,4 +30,6 @@ export interface Accreditation {
   status: AccreditationStatus;
   entryAt?: string; // ISO date
   exitAt?: string; // ISO date
+  email?: string;
+  sentAt?: string;
 }

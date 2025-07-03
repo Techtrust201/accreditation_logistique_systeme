@@ -60,6 +60,38 @@ export async function POST(req: NextRequest) {
       });
     };
 
+    // Helper: retourne le nouveau y après dessin du texte wrap.
+    const drawWrapped = (
+      page: any,
+      text: string,
+      x: number,
+      y: number,
+      maxWidth: number,
+      size = 12,
+      options: { color?: [number, number, number] } = {}
+    ) => {
+      const words = text.split(" ");
+      let line = "";
+      const lineHeight = size + 4;
+      for (let i = 0; i < words.length; i += 1) {
+        const w = words[i];
+        const test = line ? `${line} ${w}` : w;
+        const testWidth = font.widthOfTextAtSize(test, size);
+        if (testWidth > maxWidth) {
+          drawText(page, line, x, y, size, options);
+          y -= lineHeight;
+          line = w;
+        } else {
+          line = test;
+        }
+      }
+      if (line) {
+        drawText(page, line, x, y, size, options);
+        y -= lineHeight;
+      }
+      return y;
+    };
+
     const page = pdfDoc.addPage();
     const { width, height } = page.getSize();
 
@@ -91,29 +123,42 @@ export async function POST(req: NextRequest) {
 
     // === INFOS GÉNÉRALES ===
     let y = height - 130;
-    drawText(page, "Informations Générales de la Demande", 50, y, 14);
+    drawText(page, "Informations Générales de la Demande", 50, y, 14, {
+      color: [0, 0, 0],
+    });
     y -= 25;
 
-    const addLabelVal = (label: string, val: string) => {
-      drawText(page, `${label}:`, 50, y);
-      drawText(page, val, 200, y);
-      y -= 18;
-    };
+    // Nouvelle fonction pour aligner label/valeur sur une grille stricte
+    const LABEL_X = 60;
+    const LABEL_WIDTH = 150;
+    const VALUE_X = LABEL_X + LABEL_WIDTH + 10;
+    const VALUE_MAX_WIDTH = width - VALUE_X - 120; // on réserve 100px à droite pour le QR code
+    const LINE_HEIGHT = 16;
+    function addLabelVal(label: string, val: string) {
+      drawText(page, `${label} :`, LABEL_X, y, 12, {
+        color: [0.15, 0.15, 0.15],
+      });
+      y = drawWrapped(page, val, VALUE_X, y, VALUE_MAX_WIDTH, 12, {
+        color: [0, 0, 0],
+      });
+    }
 
     addLabelVal("Nom de l'entreprise", stepOneData.company);
     addLabelVal("Stand desservi", stepOneData.stand);
     addLabelVal("Déchargement par", stepOneData.unloading.toUpperCase());
 
     // Statut
-    drawText(page, "Statut Actuel:", 50, y);
+    drawText(page, "Statut Actuel :", LABEL_X, y, 12, {
+      color: [0.15, 0.15, 0.15],
+    });
     const statusColor: [number, number, number] =
       status === "ENTREE"
         ? [0, 0.55, 0.2]
         : status === "SORTIE"
-        ? [0.7, 0, 0]
-        : [0, 0, 0.6];
-    drawText(page, status || "ATTENTE", 200, y, 12, { color: statusColor });
-    y -= 18;
+          ? [0.7, 0, 0]
+          : [0, 0, 0.6];
+    drawText(page, status || "ATTENTE", VALUE_X, y, 12, { color: statusColor });
+    y -= LINE_HEIGHT;
 
     addLabelVal(
       "Heure d'entrée",
@@ -140,45 +185,64 @@ export async function POST(req: NextRequest) {
     y -= 25;
 
     // === DÉTAILS VÉHICULES ===
-    drawText(page, "Détails des Véhicules Accrédités", 50, y, 14);
+    drawText(page, "Détails des Véhicules Accrédités", 50, y, 14, {
+      color: [0, 0, 0],
+    });
     y -= 25;
 
     for (let i = 0; i < vehicles.length; i += 1) {
       const v = vehicles[i];
       const boxTop = y;
+      const PADDING = 12;
+      let yBox = y - PADDING;
 
-      drawText(page, `Véhicule ${i + 1}`, 55, y, 12);
-      y -= 18;
+      drawText(page, `Véhicule ${i + 1}`, LABEL_X, yBox, 12, {
+        color: [0.1, 0.1, 0.1],
+      });
+      yBox -= LINE_HEIGHT;
 
-      addLabelVal("Plaque", v.plate);
-      addLabelVal("Taille du véhicule", v.size);
-      addLabelVal("Téléphone du conducteur", `${v.phoneCode} ${v.phoneNumber}`);
-      addLabelVal("Date d'arrivée prévue", v.date);
-      addLabelVal("Heure d'arrivée prévue", v.time || "--:--");
-      addLabelVal("Ville de départ", v.city);
-      addLabelVal(
+      function addLabelValBox(label: string, val: string) {
+        drawText(page, `${label} :`, LABEL_X + PADDING, yBox, 12, {
+          color: [0.15, 0.15, 0.15],
+        });
+        yBox = drawWrapped(
+          page,
+          val,
+          VALUE_X,
+          yBox,
+          VALUE_MAX_WIDTH - PADDING,
+          12,
+          { color: [0, 0, 0] }
+        );
+      }
+      addLabelValBox("Plaque", v.plate);
+      addLabelValBox("Taille du véhicule", v.size);
+      addLabelValBox(
+        "Téléphone du conducteur",
+        `${v.phoneCode} ${v.phoneNumber}`
+      );
+      addLabelValBox("Date d'arrivée prévue", v.date);
+      addLabelValBox("Heure d'arrivée prévue", v.time || "--:--");
+      addLabelValBox("Ville de départ", v.city);
+      addLabelValBox(
         "Type de déchargement",
         v.unloading === "lat" ? "Latéral" : "Arrière"
       );
-
       if (v.kms) {
-        addLabelVal("Km parcourus", v.kms);
+        addLabelValBox("Km parcourus", v.kms);
       }
-
-      // message spécial (ex: taille >30) -> placeholder, skipped here
-
-      // Encadré
-      const boxBottom = y + 10;
+      yBox -= PADDING;
+      // Encadré avec padding
+      const boxBottom = yBox;
       page.drawRectangle({
-        x: 50,
+        x: LABEL_X - PADDING,
         y: boxBottom,
-        width: width - 100,
-        height: boxTop - boxBottom + 8,
+        width: width - LABEL_X - 100 + PADDING * 2,
+        height: boxTop - boxBottom + PADDING * 2,
         borderColor: rgb(0.8, 0.8, 0.8),
         borderWidth: 1,
       });
-
-      y -= 30;
+      y = boxBottom - 30; // espace entre véhicules
     }
 
     // === MESSAGE & CONSENTEMENT ===
@@ -192,40 +256,70 @@ export async function POST(req: NextRequest) {
     });
     y -= 25;
 
-    drawText(page, "Message et Conditions", 50, y, 14);
+    drawText(page, "Message et Conditions", 50, y, 14, { color: [0, 0, 0] });
     y -= 25;
 
     // message d'intervention
-    drawText(page, "Message d'intervention:", 50, y);
-    y -= 18;
+    drawText(page, "Message d'intervention :", LABEL_X, y, 12, {
+      color: [0.15, 0.15, 0.15],
+    });
+    y -= LINE_HEIGHT;
 
     if (body.stepThreeData?.message) {
-      // dessiner cadre jaune clair si message
       const msg = body.stepThreeData.message;
-      const msgHeight = 50; // approx
+      const maxW = VALUE_MAX_WIDTH - 16; // on laisse du padding horizontal
+      // Découpage en lignes, même pour mots très longs
+      const lines: string[] = [];
+      let current = "";
+      for (let i = 0; i < msg.length; i++) {
+        current += msg[i];
+        if (font.widthOfTextAtSize(current, 11) > maxW || msg[i] === "\n") {
+          if (msg[i] === "\n") {
+            lines.push(current.slice(0, -1));
+            current = "";
+          } else {
+            lines.push(current);
+            current = "";
+          }
+        }
+      }
+      if (current) lines.push(current);
+      const PADDING_Y = 10;
+      const PADDING_X = 8;
+      const msgHeight = lines.length * 15 + PADDING_Y * 2;
+      // Rectangle avec padding
       page.drawRectangle({
-        x: 50,
-        y: y - msgHeight + 10,
-        width: width - 100,
+        x: LABEL_X - 4,
+        y: y - msgHeight + PADDING_Y,
+        width: width - LABEL_X - 100 + 8,
         height: msgHeight,
         color: rgb(1, 1, 0.9),
         opacity: 0.3,
         borderColor: rgb(0.9, 0.9, 0.7),
         borderWidth: 1,
       });
-      drawText(page, msg, 55, y - 5, 11);
-      y -= msgHeight + 10;
+      let yMsg = y - PADDING_Y;
+      for (const line of lines) {
+        drawText(page, line, LABEL_X + PADDING_X, yMsg, 11);
+        yMsg -= 15;
+      }
+      y = y - msgHeight - 10;
     } else {
-      drawText(page, "Aucun message.", 50, y, 11, { color: [0.4, 0.4, 0.4] });
+      drawText(page, "Aucun message.", LABEL_X, y, 11, {
+        color: [0.4, 0.4, 0.4],
+      });
       y -= 20;
     }
 
     // consentement
-    if (body.stepThreeData?.consent) {
-      drawText(page, "☑ Je consens à la politique de confidentialité", 50, y);
-    } else {
-      drawText(page, "☐ Je consens à la politique de confidentialité", 50, y);
-    }
+    const consentPrefix = body.stepThreeData?.consent ? "[X]" : "[ ]";
+    drawText(
+      page,
+      `${consentPrefix} Je consens à la politique de confidentialité`,
+      LABEL_X,
+      y,
+      12
+    );
     y -= 25;
 
     // rappel validité
@@ -234,7 +328,7 @@ export async function POST(req: NextRequest) {
       "Veuillez présenter ce document à l'entrée du site.",
     ];
     noteLines.forEach((l) => {
-      drawText(page, l, 50, y, 9);
+      drawText(page, l, LABEL_X, y, 9);
       y -= 12;
     });
 
@@ -244,12 +338,12 @@ export async function POST(req: NextRequest) {
         type: "png",
       });
       const qrImage = await pdfDoc.embedPng(qrBuffer);
-      const qrDims = qrImage.scale(0.4);
+      // Réserve une zone à droite, bien espacée
       page.drawImage(qrImage, {
-        x: width - qrDims.width - 50,
-        y: 50,
-        width: qrDims.width,
-        height: qrDims.height,
+        x: width - 100,
+        y: 60,
+        width: 80,
+        height: 80,
       });
     }
 

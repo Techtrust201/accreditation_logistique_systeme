@@ -4,6 +4,18 @@ module.exports = {
     "./src/pages/**/*.{ts,tsx}",
     "./src/components/**/*.{ts,tsx}",
   ],
+  safelist: [
+    "bg-badge-new-bg",
+    "bg-badge-wait-bg",
+    "bg-badge-in-bg",
+    "bg-badge-out-bg",
+    "bg-badge-ref-bg",
+    "bg-badge-abs-bg",
+    "text-accent",
+    "text-badge-in-bg",
+    "text-badge-out-bg",
+    "text-badge-abs-bg",
+  ],
   theme: {
     extend: {
       fontFamily: {

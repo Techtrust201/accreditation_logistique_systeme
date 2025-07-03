@@ -1,0 +1,54 @@
+// Prisma schema pour "palais_des_festivals"
+// généré par l'assistant
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccreditationStatus {
+  ATTENTE
+  ENTREE
+  SORTIE
+  NOUVEAU
+  REFUS
+  ABSENT
+}
+
+model Accreditation {
+  id          String               @id @default(uuid())
+  createdAt   DateTime             @default(now())
+  company     String
+  stand       String
+  unloading   String
+  event       String
+  message     String?
+  consent     Boolean              @default(false)
+  status      AccreditationStatus  @default(ATTENTE)
+  entryAt     DateTime?
+  exitAt      DateTime?
+  email       String?              @db.VarChar(255)
+  sentAt      DateTime?
+
+  vehicles    Vehicle[]
+}
+
+model Vehicle {
+  id              Int          @id @default(autoincrement())
+  plate           String
+  size            String
+  phoneCode       String
+  phoneNumber     String
+  date            String
+  time            String
+  city            String
+  unloading       String
+  kms             String?
+
+  accreditation   Accreditation @relation(fields: [accreditationId], references: [id], onDelete: Cascade)
+  accreditationId String
+} 
