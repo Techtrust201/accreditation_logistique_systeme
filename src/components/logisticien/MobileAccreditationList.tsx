@@ -5,19 +5,15 @@ import type { Accreditation } from "@/types";
 
 interface MobileAccreditationListProps {
   pageData: Accreditation[];
-  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  searchParams: Record<string, string>;
-  currentPage: number;
 }
 
 export default function MobileAccreditationList({
   pageData,
-  onEdit,
   onDelete,
-  searchParams,
-  currentPage,
 }: MobileAccreditationListProps) {
+  console.log("aaaaaaaaaaaaaaaaaaaaaaaaa", pageData);
+
   return (
     <div className="block sm:hidden w-full space-y-4 overflow-x-hidden pb-20">
       {pageData.map((acc) => (
@@ -65,16 +61,8 @@ export default function MobileAccreditationList({
           </div>
           <div className="flex flex-col gap-3 mt-3 sm:flex-row">
             <Link
-              href={{
-                pathname: "/logisticien",
-                query: {
-                  ...searchParams,
-                  sel: String(acc.id),
-                  page: currentPage,
-                },
-              }}
+              href={`/logisticien/${acc.id}`}
               className="w-full flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-[#4F587E] text-white font-semibold shadow hover:bg-[#3B4252] transition text-sm"
-              onClick={() => onEdit(acc.id)}
             >
               <Pencil size={18} /> Éditer
             </Link>

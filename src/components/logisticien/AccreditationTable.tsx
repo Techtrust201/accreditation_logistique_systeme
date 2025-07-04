@@ -49,15 +49,7 @@ export function AccreditationTable({
   return (
     <>
       {/* Version mobile : cards responsives */}
-      <MobileAccreditationList
-        pageData={pageData}
-        onEdit={(id) =>
-          router.push(buildLink(searchParams, currentPage, { sel: String(id) }))
-        }
-        onDelete={handleDelete}
-        searchParams={searchParams}
-        currentPage={currentPage}
-      />
+      <MobileAccreditationList pageData={pageData} onDelete={handleDelete} />
       {/* Version desktop : tableau classique */}
       <div className="bg-gray-50 border border-gray-300 rounded-2xl shadow-lg flex flex-col h-[85vh] hidden sm:flex">
         {/* Header */}
@@ -70,7 +62,7 @@ export function AccreditationTable({
           </h1>
         </div>
         {/* Tableau */}
-        <div className="flex-1 overflow-x-auto overflow-y-auto max-h-[60vh]">
+        <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
           <table className="min-w-full text-xs md:text-base">
             <thead className="text-gray-800 border-b border-gray-300 bg-gray-100 sticky top-0 z-10">
               <tr>

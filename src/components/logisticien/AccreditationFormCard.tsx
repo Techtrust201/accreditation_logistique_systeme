@@ -24,9 +24,9 @@ export default function AccreditationFormCard({ acc }: Props) {
   const [status, setStatus] = useState<AccreditationStatus>(
     acc.status as AccreditationStatus
   );
-  const [company, setCompany] = useState(acc.stepOneData.company);
-  const [stand, setStand] = useState(acc.stepOneData.stand);
-  const [unloading, setUnloading] = useState(acc.stepOneData.unloading);
+  const [company, setCompany] = useState(acc.stepOneData?.company ?? "");
+  const [stand, setStand] = useState(acc.stepOneData?.stand ?? "");
+  const [unloading, setUnloading] = useState(acc.stepOneData?.unloading ?? "");
   const [saving, setSaving] = useState(false);
 
   const [phoneCode, setPhoneCode] = useState(
@@ -39,7 +39,7 @@ export default function AccreditationFormCard({ acc }: Props) {
   const [arrTime, setArrTime] = useState(acc.vehicles[0]?.time ?? "");
   const [size, setSize] = useState(acc.vehicles[0]?.size ?? "");
   const [city, setCity] = useState(acc.vehicles[0]?.city ?? "");
-  const [event, setEvent] = useState(acc.stepOneData.event);
+  const [event, setEvent] = useState(acc.stepOneData?.event ?? "");
   const [message, setMessage] = useState(acc.stepThreeData?.message ?? "");
   const [unloadSide, setUnloadSide] = useState(
     acc.vehicles[0]?.unloading ?? "lat"
@@ -468,7 +468,7 @@ export default function AccreditationFormCard({ acc }: Props) {
           {/* Durée (readonly) */}
           <div className="flex flex-col">
             <label className="font-semibold mb-3 text-red-700">
-              Durée sur site
+              Durée sur siteeeeeeeeeee
             </label>
             <input
               className="w-full h-12 rounded-xl border border-gray-400 px-4 bg-gray-100 text-red-700 font-semibold focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
