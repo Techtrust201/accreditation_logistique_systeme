@@ -3,13 +3,16 @@ import prisma from "@/lib/prisma";
 
 export async function GET(
   _req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: { id: string } } // ← le typage reste identique
 ) {
-  const { params } = context;
+  // 🔑 attendre params avant de lire id
+  const { id } = await context.params;
+
   const history = await prisma.accreditationEmailHistory.findMany({
-    where: { accreditationId: params.id },
+    where: { accreditationId: id },
     orderBy: { sentAt: "desc" },
     select: { email: true, sentAt: true },
   });
+
   return Response.json(history);
 }
