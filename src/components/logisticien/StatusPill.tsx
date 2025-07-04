@@ -16,8 +16,8 @@ export default function StatusPill({ status }: { status: string }) {
       short: "Att",
     },
     ENTREE: {
-      bg: "bg-[#CCF4EF]",
-      text: "text-[#009987]",
+      bg: "bg-[#E0F7F4] border border-[#B2DFDB] shadow-sm",
+      text: "text-[#4F587E]",
       full: "Entrée",
       short: "Ent",
     },
@@ -49,7 +49,8 @@ export default function StatusPill({ status }: { status: string }) {
 
   return (
     <span
-      className={`inline-flex justify-center items-center min-w-[84px] h-6 rounded-full text-xs font-bold ${cfg.bg} ${cfg.text}`}
+      className={`inline-flex justify-center items-center min-w-[90px] h-7 rounded-2xl text-xs font-medium px-4 py-1 ${cfg.bg} ${cfg.text}`}
+      style={{ boxShadow: "0 1px 4px 0 rgba(79,88,126,0.07)" }}
     >
       <span className="hidden lg:inline">{cfg.full}</span>
       <span className="inline lg:hidden">{cfg.short}</span>

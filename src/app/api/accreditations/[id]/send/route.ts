@@ -18,7 +18,6 @@ export async function POST(
     // @ts-ignore - propriétés ajoutées par migration
     const targetEmail = email || (acc as any).email;
     if (!targetEmail) return new Response("Email manquant", { status: 400 });
-    if (acc.sentAt) return new Response("Déjà envoyé", { status: 409 });
 
     // Met à jour le champ email si nouvel email
     if (!(acc as any).email && email) {
@@ -69,6 +68,13 @@ export async function POST(
     await prisma.accreditation.update({
       where: { id: acc.id },
       data: { sentAt: new Date(), email: targetEmail } as any,
+    });
+
+    await prisma.accreditationEmailHistory.create({
+      data: {
+        accreditationId: acc.id,
+        email: targetEmail,
+      },
     });
 
     return new Response(null, { status: 200 });

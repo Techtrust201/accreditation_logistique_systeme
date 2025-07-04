@@ -92,8 +92,8 @@ export async function POST(req: NextRequest) {
       return y;
     };
 
-    const page = pdfDoc.addPage();
-    const { width, height } = page.getSize();
+    let page = pdfDoc.addPage();
+    let y = page.getSize().height - 50;
 
     // === HEADER ===
     const todayStr = new Intl.DateTimeFormat("fr-FR", {
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     });
 
     // === INFOS GÉNÉRALES ===
-    let y = height - 130;
+    y = height - 130;
     drawText(page, "Informations Générales de la Demande", 50, y, 14, {
       color: [0, 0, 0],
     });
@@ -191,6 +191,15 @@ export async function POST(req: NextRequest) {
     y -= 25;
 
     for (let i = 0; i < vehicles.length; i += 1) {
+      if (y < 180) {
+        page = pdfDoc.addPage();
+        y = page.getSize().height - 50;
+        // Redessiner le header de section si besoin
+        drawText(page, "Détails des Véhicules Accrédités", 50, y, 14, {
+          color: [0, 0, 0],
+        });
+        y -= 25;
+      }
       const v = vehicles[i];
       const boxTop = y;
       const PADDING = 12;

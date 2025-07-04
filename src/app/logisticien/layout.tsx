@@ -1,20 +1,44 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 import Image from "next/image";
-
-export const metadata = {
-  title: "Dashboard Accréditations",
-};
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 
 export default function LogisticienLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <div className="flex min-h-screen text-sm text-gray-900">
-      {/* Barre latérale */}
-      <aside className="w-60 shrink-0 bg-[#3F4660] text-white flex flex-col">
+      {/* Burger mobile (visible seulement si sidebar fermée) */}
+      {!sidebarOpen && (
+        <button
+          className="fixed top-4 left-4 z-[100] sm:hidden bg-[#3F4660] text-white p-3 rounded-2xl shadow-lg hover:bg-[#4F587E] transition"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Ouvrir le menu"
+        >
+          <Menu size={28} />
+        </button>
+      )}
+      {/* Overlay mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 sm:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      {/* Sidebar */}
+      <aside
+        className={`
+        fixed sm:static top-0 left-0 z-50 h-screen w-60 bg-[#3F4660] text-white flex flex-col transition-transform duration-300
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        sm:translate-x-0 sm:flex
+      `}
+      >
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-white/10 text-lg font-semibold">
           <svg
@@ -28,7 +52,6 @@ export default function LogisticienLayout({
             <path d="M9 19L15 3H21L15 19H9Z" fill="currentColor" />
           </svg>
         </div>
-
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-4">
           {/* Bloc Accréditations */}
@@ -135,7 +158,6 @@ export default function LogisticienLayout({
             </ul>
           </details>
         </nav>
-
         {/* Déconnexion */}
         <div className="border-t border-white/10 p-4 text-xs">
           <Link
@@ -151,10 +173,21 @@ export default function LogisticienLayout({
             Se déconnecter
           </Link>
         </div>
+        {/* Close button mobile (visible seulement si sidebar ouverte) */}
+        {sidebarOpen && (
+          <button
+            className="absolute top-4 right-4 sm:hidden text-white bg-[#2C2F3F] p-2 rounded-full"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Fermer le menu"
+          >
+            <X size={24} />
+          </button>
+        )}
       </aside>
-
       {/* Contenu principal */}
-      <main className="flex-1 bg-gray-50 overflow-y-auto">{children}</main>
+      <main className="flex-1 bg-gray-50 overflow-y-auto h-auto min-h-0">
+        {children}
+      </main>
     </div>
   );
 }

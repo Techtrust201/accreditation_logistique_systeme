@@ -139,33 +139,39 @@ export default async function LogisticienDashboard({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <FilterBar searchParams={paramsObj} statusOptions={statusOptions} />
-        <Link
-          href="/logisticien/nouveau?step=1"
-          className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary-dark"
-        >
-          Nouvelle demande
-        </Link>
+    <div className="h-screen flex flex-col overflow-hidden">
+      {/* Header fixe */}
+      <div className="flex-shrink-0 p-8 pb-6">
+        <div className="flex justify-between items-center">
+          <FilterBar searchParams={paramsObj} statusOptions={statusOptions} />
+          <Link
+            href="/logisticien/nouveau?step=1"
+            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary-dark"
+          >
+            Nouvelle demande
+          </Link>
+        </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <AccreditationTable
-          pageData={pageData}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          filteredCount={filtered.length}
-          perPage={perPage}
-          searchParams={paramsObj}
-          sort={sort}
-          dir={dir}
-        />
+      {/* Contenu fixe */}
+      <div className="flex-1 px-8 pb-8">
+        <div className="grid md:grid-cols-2 gap-8 h-full">
+          <AccreditationTable
+            pageData={pageData}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            filteredCount={filtered.length}
+            perPage={perPage}
+            searchParams={paramsObj}
+            sort={sort}
+            dir={dir}
+          />
 
-        <div className="hidden md:block">
-          {selected && (
-            <AccreditationFormCard key={selected.id} acc={selected} />
-          )}
+          <div className="hidden md:block">
+            {selected && (
+              <AccreditationFormCard key={selected.id} acc={selected} />
+            )}
+          </div>
         </div>
       </div>
     </div>

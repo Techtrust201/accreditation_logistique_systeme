@@ -35,12 +35,11 @@ const SIZE_OPTIONS = [
 export default function VehicleForm({ data, update, onValidityChange }: Props) {
   const uid = useId();
   const valid =
-    data.plate.trim() &&
-    data.size &&
-    data.phoneNumber.trim() &&
-    data.date &&
-    data.city.trim() &&
-    data.unloading;
+    (data.plate ?? "").trim() &&
+    (data.size ?? "").trim() &&
+    (data.phoneNumber ?? "").trim() &&
+    (data.date ?? "").trim() &&
+    (data.city ?? "").trim();
 
   // onValidityChange est stable du point de vue logique ;
   // l'omettre des dépendances évite que le hook se déclenche à chaque nouveau render
@@ -61,7 +60,7 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
             Plaque
           </label>
           <input
-            value={data.plate}
+            value={data.plate ?? ""}
             onChange={(e) => update({ plate: e.target.value })}
             placeholder="XX-123-YY"
             className={`w-full rounded-md px-3 py-1.5 text-sm shadow-sm focus:ring-primary focus:border-primary ${
@@ -79,7 +78,7 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
             Taille du véhicule
           </label>
           <select
-            value={data.size}
+            value={data.size ?? ""}
             onChange={(e) =>
               update({ size: e.target.value as Vehicle["size"] })
             }
@@ -116,7 +115,7 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
             </select>
             <input
               type="tel"
-              value={data.phoneNumber}
+              value={data.phoneNumber ?? ""}
               onChange={(e) =>
                 update({ phoneNumber: e.target.value.replace(/\D/g, "") })
               }
@@ -140,7 +139,7 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
           </label>
           <input
             type="date"
-            value={data.date}
+            value={data.date ?? ""}
             onChange={(e) => update({ date: e.target.value })}
             className={`w-full rounded-md px-3 py-1.5 text-sm shadow-sm focus:ring-primary focus:border-primary ${
               !data.date ? "border-red-500" : "border-gray-300"
@@ -187,7 +186,7 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
             Ville de départ
           </label>
           <CityAutocomplete
-            value={data.city}
+            value={data.city ?? ""}
             onChange={(v) => update({ city: v })}
             className={`w-full rounded-md px-3 py-1.5 text-sm shadow-sm focus:ring-primary focus:border-primary ${
               !data.city ? "border-red-500" : "border-gray-300"

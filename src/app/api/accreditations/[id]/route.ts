@@ -56,3 +56,17 @@ export async function PATCH(
 
   return Response.json(updated);
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await prisma.accreditation.delete({
+      where: { id: params.id },
+    });
+    return new Response(null, { status: 204 });
+  } catch {
+    return new Response("Not found", { status: 404 });
+  }
+}

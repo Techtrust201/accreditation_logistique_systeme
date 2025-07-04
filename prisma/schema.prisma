@@ -35,6 +35,7 @@ model Accreditation {
   sentAt      DateTime?
 
   vehicles    Vehicle[]
+  emailHistory AccreditationEmailHistory[]
 }
 
 model Vehicle {
@@ -51,4 +52,12 @@ model Vehicle {
 
   accreditation   Accreditation @relation(fields: [accreditationId], references: [id], onDelete: Cascade)
   accreditationId String
+}
+
+model AccreditationEmailHistory {
+  id              Int           @id @default(autoincrement())
+  accreditation   Accreditation @relation(fields: [accreditationId], references: [id], onDelete: Cascade)
+  accreditationId String
+  email           String
+  sentAt          DateTime      @default(now())
 } 

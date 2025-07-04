@@ -37,3 +37,12 @@ CREATE TABLE "Vehicle" (
 
 -- AddForeignKey
 ALTER TABLE "Vehicle" ADD CONSTRAINT "Vehicle_accreditationId_fkey" FOREIGN KEY ("accreditationId") REFERENCES "Accreditation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- CreateTable
+CREATE TABLE "AccreditationEmailHistory" (
+    "id" SERIAL PRIMARY KEY,
+    "accreditationId" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "sentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "AccreditationEmailHistory_accreditationId_fkey" FOREIGN KEY ("accreditationId") REFERENCES "Accreditation"("id") ON DELETE CASCADE
+);
