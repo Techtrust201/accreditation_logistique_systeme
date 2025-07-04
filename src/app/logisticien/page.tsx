@@ -139,17 +139,17 @@ export default async function LogisticienDashboard({
   ];
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col ">
       {/* Header fixe */}
-      <div className="flex-shrink-0 p-8 pb-6">
+      <div className="flex-shrink-0 p-2">
         <div className="flex justify-between items-center">
           <FilterBar searchParams={paramsObj} statusOptions={statusOptions} />
-          <Link
+          {/* <Link
             href="/logisticien/nouveau?step=1"
             className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary-dark"
           >
             Nouvelle demande
-          </Link>
+          </Link> */}
         </div>
       </div>
 

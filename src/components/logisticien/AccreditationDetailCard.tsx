@@ -37,7 +37,6 @@ export default function AccreditationDetailCard({ acc }: Props) {
   return (
     <div className="rounded-card shadow-card bg-white p-6 text-sm w-full">
       <h2 className="text-lg font-semibold mb-4">Info accréditation</h2>
-      aaaaaaaaaaaaaaaaaaaaa
       <div className="mb-2">
         <label className="font-semibold mr-1">Statut :</label>
         <select

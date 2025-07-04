@@ -93,6 +93,8 @@ export async function POST(req: NextRequest) {
     };
 
     let page = pdfDoc.addPage();
+    const height = page.getSize().height;
+    const width = page.getSize().width;
     let y = page.getSize().height - 50;
 
     // === HEADER ===

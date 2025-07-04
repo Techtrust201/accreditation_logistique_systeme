@@ -4,7 +4,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { X } from "lucide-react";
+import MobileNavbar from "@/components/logisticien/MobileNavbar";
 
 export default function LogisticienLayout({
   children,
@@ -14,16 +15,7 @@ export default function LogisticienLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <div className="flex min-h-screen text-sm text-gray-900">
-      {/* Burger mobile (visible seulement si sidebar fermée) */}
-      {!sidebarOpen && (
-        <button
-          className="fixed top-4 left-4 z-[100] sm:hidden bg-[#3F4660] text-white p-3 rounded-2xl shadow-lg hover:bg-[#4F587E] transition"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Ouvrir le menu"
-        >
-          <Menu size={28} />
-        </button>
-      )}
+      {/* Burger mobile (supprimé car déplacé dans la navbar) */}
       {/* Overlay mobile */}
       {sidebarOpen && (
         <div
@@ -185,9 +177,9 @@ export default function LogisticienLayout({
         )}
       </aside>
       {/* Contenu principal */}
-      <main className="flex-1 bg-gray-50 overflow-y-auto h-auto min-h-0">
-        {children}
-      </main>
+      <main className="flex-1 bg-gray-50 h-auto min-h-0">{children}</main>
+      {/* Navbar mobile en bas */}
+      <MobileNavbar onBurger={() => setSidebarOpen(true)} />
     </div>
   );
 }

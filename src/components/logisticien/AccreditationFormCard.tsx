@@ -188,7 +188,7 @@ export default function AccreditationFormCard({ acc }: Props) {
   }
 
   return (
-    <div className="bg-gray-50 border border-gray-300 rounded-lg md:rounded-2xl shadow-lg w-full max-h-[90vh] overflow-y-auto flex flex-col">
+    <div className="bg-gray-50 border border-gray-300 rounded-lg md:rounded-2xl shadow-lg w-full max-h-[85vh] overflow-y-auto flex flex-col">
       {/* Header */}
       <div className="bg-[#4F587E] text-white rounded-t-2xl px-8 py-5 shadow flex items-center justify-between">
         <h1 className="text-lg font-bold flex items-center gap-3">
