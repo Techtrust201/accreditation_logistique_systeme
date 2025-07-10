@@ -62,8 +62,7 @@ export default function AccreditationDetailCard({ acc }: Props) {
         <span className="font-semibold">Plaque :</span> {acc.vehicles[0]?.plate}
       </p>
       <p>
-        <span className="font-semibold">Entreprise :</span>{" "}
-        {acc.stepOneData?.company}
+        <span className="font-semibold">Entreprise :</span> {acc.company}
       </p>
       <button
         onClick={save}

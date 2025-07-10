@@ -5,17 +5,13 @@ import type { Vehicle } from "@/types";
 
 interface Props {
   data: {
-    stepOneData: {
-      company: string;
-      stand: string;
-      unloading: string;
-      event: string;
-    };
+    company: string;
+    stand: string;
+    unloading: string;
+    event: string;
     vehicles: Vehicle[];
-    stepThreeData: {
-      message: string;
-      consent: boolean;
-    };
+    message: string;
+    consent: boolean;
   };
   onReset: () => void;
 }

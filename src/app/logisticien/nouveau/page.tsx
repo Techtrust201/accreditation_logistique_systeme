@@ -46,42 +46,41 @@ export default function LogisticienNew() {
     };
   }
 
+  // 1. Définir les états par objet pour chaque étape
   const [stepOneData, setStepOneData] = useState({
     company: "",
     stand: "",
     unloading: "",
     event: "",
   });
-
   const [vehicles, setVehicles] = useState<Vehicle[]>([defaultVehicle()]);
-
   const [stepThreeData, setStepThreeData] = useState({
     message: "",
     consent: false,
   });
 
+  // 2. Fonctions de patch partiel pour chaque objet
+  const patchStepOne = (patch: Partial<typeof stepOneData>) =>
+    setStepOneData((prev) => ({ ...prev, ...patch }));
+  const patchStepThree = (patch: Partial<typeof stepThreeData>) =>
+    setStepThreeData((prev) => ({ ...prev, ...patch }));
+
+  // 3. Adapter les props passées aux Steps
   useEffect(() => {
-    setStepOneData(safeLoad("log_step1", stepOneData));
+    setStepOneData(safeLoad("log_stepOneData", stepOneData));
     setVehicles(safeLoad<Vehicle[]>("log_vehicles", vehicles));
-    setStepThreeData(safeLoad("log_step3", stepThreeData));
+    setStepThreeData(safeLoad("log_stepThreeData", stepThreeData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const patchStep1 = (p: Partial<typeof stepOneData>) =>
-    setStepOneData({ ...stepOneData, ...p });
-  const patchStep3 = (p: Partial<typeof stepThreeData>) =>
-    setStepThreeData({ ...stepThreeData, ...p });
-
-  useEffect(() => setStepValid(false), [step]);
-
   useEffect(() => {
-    localStorage.setItem("log_step1", JSON.stringify(stepOneData));
+    localStorage.setItem("log_stepOneData", JSON.stringify(stepOneData));
   }, [stepOneData]);
   useEffect(() => {
     localStorage.setItem("log_vehicles", JSON.stringify(vehicles));
   }, [vehicles]);
   useEffect(() => {
-    localStorage.setItem("log_step3", JSON.stringify(stepThreeData));
+    localStorage.setItem("log_stepThreeData", JSON.stringify(stepThreeData));
   }, [stepThreeData]);
 
   function gotoStep(n: number) {
@@ -92,9 +91,9 @@ export default function LogisticienNew() {
     setStepOneData({ company: "", stand: "", unloading: "", event: "" });
     setVehicles([defaultVehicle()]);
     setStepThreeData({ message: "", consent: false });
-    localStorage.removeItem("log_step1");
+    localStorage.removeItem("log_stepOneData");
     localStorage.removeItem("log_vehicles");
-    localStorage.removeItem("log_step3");
+    localStorage.removeItem("log_stepThreeData");
     gotoStep(1);
   }
 
@@ -140,8 +139,8 @@ export default function LogisticienNew() {
                         done
                           ? "bg-[#3DAAA4] border-[#3DAAA4]"
                           : active
-                          ? "bg-primary border-primary"
-                          : "bg-white border-gray-300"
+                            ? "bg-primary border-primary"
+                            : "bg-white border-gray-300"
                       }`}
                     >
                       {" "}
@@ -167,7 +166,7 @@ export default function LogisticienNew() {
               {step === 1 && (
                 <StepOne
                   data={stepOneData}
-                  update={patchStep1}
+                  update={patchStepOne}
                   onValidityChange={setStepValid}
                 />
               )}
@@ -181,13 +180,13 @@ export default function LogisticienNew() {
               {step === 3 && (
                 <StepThree
                   data={stepThreeData}
-                  update={patchStep3}
+                  update={patchStepThree}
                   onValidityChange={setStepValid}
                 />
               )}
               {step === 4 && (
                 <StepFourLog
-                  data={{ stepOneData, vehicles, stepThreeData }}
+                  data={{ ...stepOneData, ...stepThreeData, vehicles }}
                   onReset={resetAll}
                 />
               )}

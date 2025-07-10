@@ -13,96 +13,57 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const raw = await req.json();
-
-    // Nouvelle version: { company, stand, ... vehicle }
-    if (raw.company) {
-      const body = raw as {
-        company: string;
-        stand: string;
-        unloading: string;
-        event: string;
-        message?: string;
-        consent?: boolean;
-        vehicle: {
-          plate: string;
-          size: string;
-          phoneCode: string;
-          phoneNumber: string;
-          date: string;
-          time: string;
-          city: string;
-          unloading: string;
-        };
-      };
-
-      const created = await prisma.accreditation.create({
-        data: {
-          company: body.company,
-          stand: body.stand,
-          unloading: body.unloading,
-          event: body.event,
-          message: body.message ?? "",
-          consent: body.consent ?? true,
-          status: "ATTENTE",
-          vehicles: {
-            create: {
-              ...body.vehicle,
-            },
-          },
-        },
-        include: { vehicles: true },
+    const { company, stand, unloading, event, message, consent, vehicles } =
+      raw;
+    if (
+      !company ||
+      !stand ||
+      !unloading ||
+      !event ||
+      !Array.isArray(vehicles) ||
+      vehicles.length === 0 ||
+      vehicles.some(
+        (v) =>
+          !v.plate ||
+          !v.size ||
+          !v.phoneCode ||
+          !v.phoneNumber ||
+          !v.date ||
+          !v.time ||
+          !v.city ||
+          !v.unloading
+      )
+    ) {
+      return new Response("Invalid payload: missing vehicle fields", {
+        status: 400,
       });
-
-      return Response.json(created, { status: 201 });
     }
-
-    // Ancienne version: { stepOneData, vehicles, stepThreeData }
-    if (raw.stepOneData) {
-      const {
-        stepOneData,
-        vehicles: vehs,
-        stepThreeData,
-      } = raw as {
-        stepOneData: {
-          company: string;
-          stand: string;
-          unloading: string;
-          event: string;
-        };
-        vehicles: Vehicle[];
-        stepThreeData: { message: string; consent: boolean };
-      };
-
-      const created = await prisma.accreditation.create({
-        data: {
-          company: stepOneData.company,
-          stand: stepOneData.stand,
-          unloading: stepOneData.unloading,
-          event: stepOneData.event,
-          message: stepThreeData?.message ?? "",
-          consent: stepThreeData?.consent ?? true,
-          status: "ATTENTE",
-          vehicles: {
-            create: vehs.map((v) => ({
-              plate: v.plate,
-              size: v.size,
-              phoneCode: v.phoneCode,
-              phoneNumber: v.phoneNumber,
-              date: v.date,
-              time: v.time,
-              city: v.city,
-              unloading: v.unloading,
-              kms: v.kms ?? "",
-            })),
-          },
+    const created = await prisma.accreditation.create({
+      data: {
+        company,
+        stand,
+        unloading,
+        event,
+        message: message ?? "",
+        consent: consent ?? true,
+        status: "ATTENTE",
+        vehicles: {
+          create: vehicles.map((v) => ({
+            plate: v.plate,
+            size: v.size,
+            phoneCode: v.phoneCode,
+            phoneNumber: v.phoneNumber,
+            date: v.date,
+            time: v.time,
+            city: v.city,
+            unloading: v.unloading,
+            kms: v.kms ?? "",
+          })),
         },
-        include: { vehicles: true },
-      });
-
-      return Response.json(created, { status: 201 });
-    }
-
-    return new Response("Invalid payload", { status: 400 });
+      },
+      include: { vehicles: true },
+    });
+    return Response.json(created, { status: 201 });
   } catch (err) {
     console.error(err);
     return new Response("Invalid payload", { status: 400 });

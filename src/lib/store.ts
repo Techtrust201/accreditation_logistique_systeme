@@ -11,12 +11,15 @@ export async function readAccreditations(): Promise<Accreditation[]> {
     (a): Accreditation => ({
       id: a.id,
       createdAt: a.createdAt.toISOString(),
-      stepOneData: {
-        company: a.company,
-        stand: a.stand,
-        unloading: a.unloading,
-        event: a.event,
-      },
+      company: a.company,
+      stand: a.stand,
+      unloading: a.unloading,
+      event: a.event,
+      message: a.message || "",
+      consent: a.consent,
+      status: a.status as Accreditation["status"],
+      entryAt: a.entryAt,
+      exitAt: a.exitAt,
       vehicles: a.vehicles.map(
         (v): Vehicle => ({
           id: v.id,
@@ -31,21 +34,8 @@ export async function readAccreditations(): Promise<Accreditation[]> {
           kms: v.kms || undefined,
         })
       ),
-      stepThreeData: {
-        message: a.message || "",
-        consent: a.consent,
-      },
-      status: a.status as Accreditation["status"],
-      entryAt: a.entryAt?.toISOString(),
-      exitAt: a.exitAt?.toISOString(),
     })
   );
-}
-
-// Fonctions d'écriture conservées pour compat mais redirigent vers Prisma ----
-export async function writeAccreditations() {
-  // plus nécessaire : les opérations d'écriture se font via Prisma directement
-  console.warn("writeAccreditations est obsolète depuis la migration Prisma");
 }
 
 export function generateId(): string {

@@ -22,9 +22,9 @@ export default function AccreditationFormCard({ acc }: Props) {
   const [status, setStatus] = useState<AccreditationStatus>(
     acc.status as AccreditationStatus
   );
-  const [company, setCompany] = useState(acc.stepOneData?.company ?? "");
-  const [stand, setStand] = useState(acc.stepOneData?.stand ?? "");
-  const [unloading, setUnloading] = useState(acc.stepOneData?.unloading ?? "");
+  const [company, setCompany] = useState(acc.company ?? "");
+  const [stand, setStand] = useState(acc.stand ?? "");
+  const [unloading, setUnloading] = useState(acc.unloading ?? "");
   const [saving, setSaving] = useState(false);
 
   const [phoneCode, setPhoneCode] = useState(
@@ -37,8 +37,8 @@ export default function AccreditationFormCard({ acc }: Props) {
   const [arrTime, setArrTime] = useState(acc.vehicles[0]?.time ?? "");
   const [size, setSize] = useState(acc.vehicles[0]?.size ?? "");
   const [city, setCity] = useState(acc.vehicles[0]?.city ?? "");
-  const [event, setEvent] = useState(acc.stepOneData?.event ?? "");
-  const [message, setMessage] = useState(acc.stepThreeData?.message ?? "");
+  const [event, setEvent] = useState(acc.event ?? "");
+  const [message, setMessage] = useState(acc.message ?? "");
   const [unloadSide, setUnloadSide] = useState(
     acc.vehicles[0]?.unloading ?? "lat"
   );
@@ -120,7 +120,6 @@ export default function AccreditationFormCard({ acc }: Props) {
               unloading: unloadSide,
             },
           ],
-          // stepThreeData supprimé ici
         }),
       });
       if (!res.ok) throw new Error("Erreur");

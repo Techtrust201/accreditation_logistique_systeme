@@ -19,17 +19,13 @@ interface Vehicle {
 
 interface AccreditationPayload {
   id?: string;
-  stepOneData: {
-    company: string;
-    stand: string;
-    unloading: string;
-    event: string;
-  };
+  company: string;
+  stand: string;
+  unloading: string;
+  event: string;
   vehicles: Vehicle[];
-  stepThreeData: {
-    message: string;
-    consent: boolean;
-  };
+  message: string;
+  consent: boolean;
   status?: "ATTENTE" | "ENTREE" | "SORTIE";
   entryAt?: string;
   exitAt?: string;
@@ -38,7 +34,19 @@ interface AccreditationPayload {
 export async function POST(req: NextRequest) {
   try {
     const body: AccreditationPayload = await req.json();
-    const { id, stepOneData, vehicles, status, entryAt, exitAt } = body;
+    const {
+      id,
+      company,
+      stand,
+      unloading,
+      event,
+      vehicles,
+      message,
+      consent,
+      status,
+      entryAt,
+      exitAt,
+    } = body;
 
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -145,9 +153,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    addLabelVal("Nom de l'entreprise", stepOneData.company);
-    addLabelVal("Stand desservi", stepOneData.stand);
-    addLabelVal("Déchargement par", stepOneData.unloading.toUpperCase());
+    addLabelVal("Nom de l'entreprise", company);
+    addLabelVal("Stand desservi", stand);
+    addLabelVal("Déchargement par", unloading.toUpperCase());
 
     // Statut
     drawText(page, "Statut Actuel :", LABEL_X, y, 12, {
@@ -276,8 +284,8 @@ export async function POST(req: NextRequest) {
     });
     y -= LINE_HEIGHT;
 
-    if (body.stepThreeData?.message) {
-      const msg = body.stepThreeData.message;
+    if (message) {
+      const msg = message;
       const maxW = VALUE_MAX_WIDTH - 16; // on laisse du padding horizontal
       // Découpage en lignes, même pour mots très longs
       const lines: string[] = [];
@@ -323,7 +331,7 @@ export async function POST(req: NextRequest) {
     }
 
     // consentement
-    const consentPrefix = body.stepThreeData?.consent ? "[X]" : "[ ]";
+    const consentPrefix = consent ? "[X]" : "[ ]";
     drawText(
       page,
       `${consentPrefix} Je consens à la politique de confidentialité`,

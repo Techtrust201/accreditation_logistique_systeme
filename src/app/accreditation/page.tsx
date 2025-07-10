@@ -46,20 +46,24 @@ export default function AccreditationPage() {
     };
   }
 
-  // Etape 1 : identification
+  // 1. Définir les états par objet pour chaque étape
   const [stepOneData, setStepOneData] = useState({
     company: "",
     stand: "",
     unloading: "",
     event: "",
   });
-
   const [vehicles, setVehicles] = useState<Vehicle[]>([defaultVehicle()]);
-
   const [stepThreeData, setStepThreeData] = useState({
     message: "",
     consent: false,
   });
+
+  // 2. Fonctions de patch partiel pour chaque objet
+  const patchStepOne = (patch: Partial<typeof stepOneData>) =>
+    setStepOneData((prev) => ({ ...prev, ...patch }));
+  const patchStepThree = (patch: Partial<typeof stepThreeData>) =>
+    setStepThreeData((prev) => ({ ...prev, ...patch }));
 
   // hydrate from localStorage after mount
   useEffect(() => {
@@ -68,12 +72,6 @@ export default function AccreditationPage() {
     setStepThreeData(safeLoad("acc_step3", stepThreeData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const patchStep1 = (p: Partial<typeof stepOneData>) =>
-    setStepOneData({ ...stepOneData, ...p });
-
-  const patchStep3 = (p: Partial<typeof stepThreeData>) =>
-    setStepThreeData({ ...stepThreeData, ...p });
 
   // reset validity when step changes
   useEffect(() => {
@@ -155,8 +153,8 @@ export default function AccreditationPage() {
                         done
                           ? "bg-[#3DAAA4] border-[#3DAAA4]"
                           : active
-                          ? "bg-primary border-primary"
-                          : "bg-white border-gray-300"
+                            ? "bg-primary border-primary"
+                            : "bg-white border-gray-300"
                       }`}
                     >
                       <img
@@ -182,7 +180,7 @@ export default function AccreditationPage() {
               {step === 1 && (
                 <StepOne
                   data={stepOneData}
-                  update={patchStep1}
+                  update={patchStepOne}
                   onValidityChange={setStepValid}
                 />
               )}
@@ -196,17 +194,13 @@ export default function AccreditationPage() {
               {step === 3 && (
                 <StepThree
                   data={stepThreeData}
-                  update={patchStep3}
+                  update={patchStepThree}
                   onValidityChange={setStepValid}
                 />
               )}
               {step === 4 && (
                 <StepFour
-                  data={{
-                    stepOneData,
-                    vehicles,
-                    stepThreeData,
-                  }}
+                  data={{ ...stepOneData, ...stepThreeData, vehicles }}
                   onReset={resetAll}
                 />
               )}
