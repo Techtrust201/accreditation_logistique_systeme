@@ -11,25 +11,27 @@ export interface Vehicle {
   kms?: string;
 }
 
-export type AccreditationStatus = "ATTENTE" | "ENTREE" | "SORTIE";
+export type AccreditationStatus =
+  | "ATTENTE"
+  | "ENTREE"
+  | "SORTIE"
+  | "NOUVEAU"
+  | "REFUS"
+  | "ABSENT";
 
 export interface Accreditation {
   id: string;
-  createdAt: string; // ISO date
-  stepOneData: {
-    company: string;
-    stand: string;
-    unloading: string;
-    event: string;
-  };
+  createdAt: Date; // ISO date
+  company: string;
+  stand: string;
+  unloading: string;
+  event: string;
+  message?: string;
+  consent: boolean;
   vehicles: Vehicle[];
-  stepThreeData: {
-    message: string;
-    consent: boolean;
-  };
   status: AccreditationStatus;
-  entryAt?: string; // ISO date
-  exitAt?: string; // ISO date
+  entryAt?: Date; // ISO date
+  exitAt?: Date; // ISO date
   email?: string;
-  sentAt?: string;
+  sentAt?: Date;
 }
