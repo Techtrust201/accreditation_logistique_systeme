@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import StatusPill from "./StatusPill";
 import type { Accreditation, AccreditationStatus } from "@/types";
 import { useRouter } from "next/navigation";
-import { List, PlusCircle, Pencil, Trash2, Info } from "lucide-react";
+import { Pencil, Trash2, Info } from "lucide-react";
 import VehicleForm from "@/components/accreditation/VehicleForm";
 
 const EVENT_OPTIONS = [
@@ -12,8 +12,6 @@ const EVENT_OPTIONS = [
   { value: "miptv", label: "MIPTV" },
   { value: "mipcom", label: "MIPCOM" },
 ];
-
-const SIZE_OPTIONS = ["-10", "10-14", "15-20", "+20"];
 
 interface Props {
   acc: Accreditation;
@@ -105,7 +103,11 @@ export default function AccreditationFormCard({ acc }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status,
-          stepOneData: { company, stand, unloading, event },
+          company,
+          stand,
+          unloading,
+          event,
+          message,
           vehicles: [
             {
               ...acc.vehicles[0],
@@ -118,7 +120,7 @@ export default function AccreditationFormCard({ acc }: Props) {
               unloading: unloadSide,
             },
           ],
-          stepThreeData: { message, consent: true },
+          // stepThreeData supprimé ici
         }),
       });
       if (!res.ok) throw new Error("Erreur");
@@ -468,7 +470,7 @@ export default function AccreditationFormCard({ acc }: Props) {
           {/* Durée (readonly) */}
           <div className="flex flex-col">
             <label className="font-semibold mb-3 text-red-700">
-              Durée sur siteeeeeeeeeee
+              Durée sur site
             </label>
             <input
               className="w-full h-12 rounded-xl border border-gray-400 px-4 bg-gray-100 text-red-700 font-semibold focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
