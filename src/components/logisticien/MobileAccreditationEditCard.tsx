@@ -33,7 +33,19 @@ export default function MobileAccreditationEditCard({
   const [unloading, setUnloading] = useState(acc.unloading ?? "");
   const [event, setEvent] = useState(acc.event ?? "");
   const [message, setMessage] = useState(acc.message ?? "");
-  const [vehicles, setVehicles] = useState(acc.vehicles ?? []);
+  // Remplacer vehicles par un seul véhicule
+  const [vehicle, setVehicle] = useState(
+    acc.vehicles[0] ?? {
+      plate: "",
+      size: "",
+      phoneCode: "",
+      phoneNumber: "",
+      date: "",
+      time: "",
+      city: "",
+      unloading: "lat",
+    }
+  );
   const [showEntryConfirm, setShowEntryConfirm] = useState(false);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [newVehicle, setNewVehicle] = useState({
@@ -57,7 +69,7 @@ export default function MobileAccreditationEditCard({
     setUnloading(acc.unloading ?? "");
     setEvent(acc.event ?? "");
     setMessage(acc.message ?? "");
-    setVehicles(acc.vehicles ?? []);
+    // setVehicles(acc.vehicles ?? []); // This line is removed as vehicles is now a single vehicle
   }, [acc.id]);
 
   const handleStatusChange = (newStatus: AccreditationStatus) => {
@@ -93,7 +105,7 @@ export default function MobileAccreditationEditCard({
       alert("Merci de remplir tous les champs obligatoires");
       return;
     }
-    setVehicles((prev) => [...prev, { ...newVehicle, id: Date.now() }]);
+    // setVehicles((prev) => [...prev, { ...newVehicle, id: Date.now() }]); // This line is removed
     setShowAddVehicle(false);
     setNewVehicle({
       plate: "",
@@ -122,7 +134,7 @@ export default function MobileAccreditationEditCard({
           unloading,
           event,
           message,
-          vehicles,
+          vehicles: [vehicle],
         }),
       });
       if (!res.ok) throw new Error("Erreur d'enregistrement");
@@ -246,18 +258,18 @@ export default function MobileAccreditationEditCard({
       <div className="space-y-2">
         <div className="font-semibold text-[#4F587E] mb-1 flex items-center justify-between">
           <span>Véhicules</span>
-          <button
+          {/* <button
             type="button"
             className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#4F587E] text-white text-xs font-semibold shadow hover:bg-[#3B4252]"
             onClick={() => setShowAddVehicle(true)}
           >
             <PlusCircle size={16} /> Ajouter
-          </button>
+          </button> */}
         </div>
-        {vehicles.length === 0 && (
+        {/* {vehicles.length === 0 && (
           <div className="text-xs text-gray-500">Aucun véhicule</div>
-        )}
-        {vehicles.map((v, i) => (
+        )} */}
+        {/* {vehicles.map((v, i) => (
           <div
             key={v.id || i}
             className="bg-gray-50 rounded-lg border p-3 flex flex-col gap-1 mb-2"
@@ -287,7 +299,38 @@ export default function MobileAccreditationEditCard({
               Déchargement : {v.unloading === "lat" ? "Latéral" : "Arrière"}
             </div>
           </div>
-        ))}
+        ))} */}
+        {/* Afficher un seul VehicleForm (ou équivalent) pour vehicle */}
+        <div className="bg-gray-50 rounded-lg border p-3 flex flex-col gap-1 mb-2">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-sm">
+              Plaque : {vehicle.plate}
+            </span>
+            <button
+              type="button"
+              className="text-red-500 hover:bg-red-100 rounded-full p-1 ml-2"
+              aria-label="Supprimer le véhicule"
+              onClick={() => {
+                if (window.confirm("Supprimer ce véhicule ?")) {
+                  // setVehicles(vehicles.filter((_, idx) => idx !== i)); // This line is removed
+                }
+              }}
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+          <div className="text-xs text-gray-600">
+            Taille : {vehicle.size} | Téléphone : {vehicle.phoneCode}{" "}
+            {vehicle.phoneNumber}
+          </div>
+          <div className="text-xs text-gray-600">
+            Date : {vehicle.date} | Heure : {vehicle.time} | Ville :{" "}
+            {vehicle.city}
+          </div>
+          <div className="text-xs text-gray-600">
+            Déchargement : {vehicle.unloading === "lat" ? "Latéral" : "Arrière"}
+          </div>
+        </div>
       </div>
       {/* Message conducteur */}
       <div className="flex flex-col gap-1">

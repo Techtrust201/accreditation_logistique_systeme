@@ -53,7 +53,7 @@ export default function AccreditationPage() {
     unloading: "",
     event: "",
   });
-  const [vehicles, setVehicles] = useState<Vehicle[]>([defaultVehicle()]);
+  const [vehicle, setVehicle] = useState<Vehicle>(defaultVehicle());
   const [stepThreeData, setStepThreeData] = useState({
     message: "",
     consent: false,
@@ -68,7 +68,7 @@ export default function AccreditationPage() {
   // hydrate from localStorage after mount
   useEffect(() => {
     setStepOneData(safeLoad("acc_step1", stepOneData));
-    setVehicles(safeLoad<Vehicle[]>("acc_vehicles", vehicles));
+    setVehicle(safeLoad<Vehicle>("acc_vehicle", vehicle));
     setStepThreeData(safeLoad("acc_step3", stepThreeData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -84,8 +84,8 @@ export default function AccreditationPage() {
   }, [stepOneData]);
 
   useEffect(() => {
-    localStorage.setItem("acc_vehicles", JSON.stringify(vehicles));
-  }, [vehicles]);
+    localStorage.setItem("acc_vehicle", JSON.stringify(vehicle));
+  }, [vehicle]);
 
   useEffect(() => {
     localStorage.setItem("acc_step3", JSON.stringify(stepThreeData));
@@ -97,10 +97,10 @@ export default function AccreditationPage() {
 
   function resetAll() {
     setStepOneData({ company: "", stand: "", unloading: "", event: "" });
-    setVehicles([defaultVehicle()]);
+    setVehicle(defaultVehicle());
     setStepThreeData({ message: "", consent: false });
     localStorage.removeItem("acc_step1");
-    localStorage.removeItem("acc_vehicles");
+    localStorage.removeItem("acc_vehicle");
     localStorage.removeItem("acc_step3");
     gotoStep(1);
   }
@@ -186,8 +186,8 @@ export default function AccreditationPage() {
               )}
               {step === 2 && (
                 <StepTwo
-                  data={vehicles}
-                  update={setVehicles}
+                  data={vehicle}
+                  update={(patch) => setVehicle((v) => ({ ...v, ...patch }))}
                   onValidityChange={setStepValid}
                 />
               )}
@@ -200,7 +200,11 @@ export default function AccreditationPage() {
               )}
               {step === 4 && (
                 <StepFour
-                  data={{ ...stepOneData, ...stepThreeData, vehicles }}
+                  data={{
+                    ...stepOneData,
+                    ...stepThreeData,
+                    vehicles: [vehicle],
+                  }}
                   onReset={resetAll}
                 />
               )}

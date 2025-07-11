@@ -28,20 +28,20 @@ export default function StepFourLog({ data, onReset }: Props) {
       }
       setLoading(true);
 
-      // 1. On enregistre la demande (inclut email)
+      // 1. On enregistre la demande (sans email dans le payload)
       const saveRes = await fetch("/api/accreditations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, email }),
+        body: JSON.stringify(data), // <-- Correction ici : PAS de email à la racine
       });
       if (!saveRes.ok) throw new Error("Erreur enregistrement");
       const created = await saveRes.json();
 
-      // 2. On envoie directement le mail
+      // 2. On envoie directement le mail (l'API backend va générer le PDF et l'envoyer à l'email)
       await fetch(`/api/accreditations/${created.id}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email }), // <-- Ici, on ne passe QUE l'email, c'est suffisant
       });
 
       // 3. Génère et télécharge le PDF pour le logisticien aussi

@@ -6,7 +6,7 @@ export async function GET(
   context: { params: { id: string } } // ← le typage reste identique
 ) {
   // 🔑 attendre params avant de lire id
-  const { id } = await context.params;
+  const { id } = context.params;
 
   const history = await prisma.accreditationEmailHistory.findMany({
     where: { accreditationId: id },

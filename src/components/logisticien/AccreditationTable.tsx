@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { List, ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { List, Pencil, Trash2 } from "lucide-react";
 import { buildLink } from "@/lib/url";
 import StatusPill from "./StatusPill";
 import type { Accreditation } from "@/types";
@@ -66,38 +66,22 @@ export function AccreditationTable({
           <table className="min-w-full text-xs md:text-base">
             <thead className="text-gray-800 border-b border-gray-300 bg-gray-100 sticky top-0 z-10">
               <tr>
-                {[
-                  { key: "status", label: "Statut" },
-                  { key: "id", label: "#ID" },
-                  { key: "plate", label: "Plaque" },
-                  { key: "createdAt", label: "Date" },
-                ].map(({ key, label }) => (
-                  <th
-                    key={key}
-                    className="px-2 md:px-6 py-2 md:py-4 font-semibold text-xs md:text-base first:pl-2 md:first:pl-8"
-                  >
-                    <Link
-                      href={buildLink(
-                        {
-                          ...searchParams,
-                          sort: key,
-                          dir: sort === key && dir === "asc" ? "desc" : "asc",
-                        },
-                        1
-                      )}
-                      className="flex items-center gap-2 hover:text-[#4F587E] transition-colors duration-200"
-                    >
-                      {label}
-                      <ChevronDown
-                        size={16}
-                        className={`text-white/70 transition-transform duration-200 ${
-                          sort === key && dir === "asc" ? "rotate-180" : ""
-                        }`}
-                      />
-                    </Link>
-                  </th>
-                ))}
-                <th className="px-6 py-4" />
+                <th className="px-2 md:px-6 py-2 md:py-4 font-semibold text-xs md:text-base first:pl-2 md:first:pl-8 text-center">
+                  Statut
+                </th>
+                <th className="px-6 py-2 font-semibold text-xs md:text-base text-center">
+                  Société
+                </th>
+                <th className="px-6 py-2 font-semibold text-xs md:text-base text-center">
+                  Heure d&apos;entrée
+                </th>
+                <th className="px-6 py-2 font-semibold text-xs md:text-base text-center">
+                  Heure sur site
+                </th>
+                <th className="px-6 py-2 font-semibold text-xs md:text-base text-center">
+                  Heure de sortie
+                </th>
+                <th className="px-6 py-2" />
               </tr>
             </thead>
             <tbody>
@@ -106,43 +90,39 @@ export function AccreditationTable({
                   key={`${acc.id}-${idx}`}
                   className="hover:bg-gray-100 transition-all duration-200 border-b border-gray-200 group"
                 >
-                  <td className="py-2 md:py-4 px-2 md:px-8">
+                  <td className="py-2 md:py-4 px-2 md:px-8 text-center">
                     <StatusPill status={(acc.status as string) || "NOUV"} />
                   </td>
-                  <td className="px-6 whitespace-nowrap text-[#4F587E] font-semibold">
-                    <Link
-                      href={buildLink(searchParams, currentPage, {
-                        sel: String(acc.id),
-                      })}
-                      className="hover:text-[#3B4252] transition-colors duration-200 font-medium"
-                    >
-                      #{acc.id.slice(0, 8)}
-                    </Link>
+                  <td className="px-6 font-medium text-gray-900 text-center">
+                    {acc.company}
                   </td>
-                  <td className="px-6 font-medium text-gray-900">
-                    {acc.vehicles && acc.vehicles.length > 0 ? (
-                      <>
-                        <span className="inline-block bg-gray-100 rounded px-2 py-0.5 text-xs text-gray-700 mr-1">
-                          {acc.vehicles[0].plate}
-                        </span>
-                        {acc.vehicles.length > 2 && (
-                          <span className="inline-block bg-gray-200 rounded px-2 py-0.5 text-xs text-gray-500">
-                            +{acc.vehicles.length - 1}
-                          </span>
-                        )}
-                        {acc.vehicles.length === 2 && (
-                          <span className="inline-block bg-gray-100 rounded px-2 py-0.5 text-xs text-gray-700 mr-1">
-                            {acc.vehicles[1].plate}
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      "-"
-                    )}
+                  <td className="px-6 whitespace-nowrap text-gray-700 text-center">
+                    {acc.entryAt
+                      ? new Date(acc.entryAt).toLocaleTimeString("fr-FR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "-"}
                   </td>
-                  <td className="px-6 whitespace-nowrap text-gray-700">
-                    {acc.createdAt
-                      ? new Date(acc.createdAt).toLocaleDateString("fr-FR")
+                  <td className="px-6 whitespace-nowrap text-gray-700 text-center">
+                    {acc.entryAt && acc.exitAt
+                      ? (() => {
+                          const d1 = new Date(acc.entryAt);
+                          const d2 = new Date(acc.exitAt);
+                          const ms = d2 - d1;
+                          if (ms <= 0) return "-";
+                          const min = Math.floor(ms / 60000) % 60;
+                          const h = Math.floor(ms / 3600000);
+                          return `${h}h ${min}min`;
+                        })()
+                      : "-"}
+                  </td>
+                  <td className="px-6 whitespace-nowrap text-gray-700 text-center">
+                    {acc.exitAt
+                      ? new Date(acc.exitAt).toLocaleTimeString("fr-FR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : "-"}
                   </td>
                   <td className="px-6 text-right">

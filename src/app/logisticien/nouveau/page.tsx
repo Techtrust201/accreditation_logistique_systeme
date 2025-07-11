@@ -53,7 +53,7 @@ export default function LogisticienNew() {
     unloading: "",
     event: "",
   });
-  const [vehicles, setVehicles] = useState<Vehicle[]>([defaultVehicle()]);
+  const [vehicle, setVehicle] = useState<Vehicle>(defaultVehicle());
   const [stepThreeData, setStepThreeData] = useState({
     message: "",
     consent: false,
@@ -68,17 +68,21 @@ export default function LogisticienNew() {
   // 3. Adapter les props passées aux Steps
   useEffect(() => {
     setStepOneData(safeLoad("log_stepOneData", stepOneData));
-    setVehicles(safeLoad<Vehicle[]>("log_vehicles", vehicles));
+    setVehicle(safeLoad<Vehicle>("log_vehicle", vehicle));
     setStepThreeData(safeLoad("log_stepThreeData", stepThreeData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    setStepValid(false);
+  }, [step]);
+
+  useEffect(() => {
     localStorage.setItem("log_stepOneData", JSON.stringify(stepOneData));
   }, [stepOneData]);
   useEffect(() => {
-    localStorage.setItem("log_vehicles", JSON.stringify(vehicles));
-  }, [vehicles]);
+    localStorage.setItem("log_vehicle", JSON.stringify(vehicle));
+  }, [vehicle]);
   useEffect(() => {
     localStorage.setItem("log_stepThreeData", JSON.stringify(stepThreeData));
   }, [stepThreeData]);
@@ -89,10 +93,10 @@ export default function LogisticienNew() {
 
   function resetAll() {
     setStepOneData({ company: "", stand: "", unloading: "", event: "" });
-    setVehicles([defaultVehicle()]);
+    setVehicle(defaultVehicle());
     setStepThreeData({ message: "", consent: false });
     localStorage.removeItem("log_stepOneData");
-    localStorage.removeItem("log_vehicles");
+    localStorage.removeItem("log_vehicle");
     localStorage.removeItem("log_stepThreeData");
     gotoStep(1);
   }
@@ -172,8 +176,8 @@ export default function LogisticienNew() {
               )}
               {step === 2 && (
                 <StepTwo
-                  data={vehicles}
-                  update={setVehicles}
+                  data={vehicle}
+                  update={(patch) => setVehicle((v) => ({ ...v, ...patch }))}
                   onValidityChange={setStepValid}
                 />
               )}
@@ -186,7 +190,11 @@ export default function LogisticienNew() {
               )}
               {step === 4 && (
                 <StepFourLog
-                  data={{ ...stepOneData, ...stepThreeData, vehicles }}
+                  data={{
+                    ...stepOneData,
+                    ...stepThreeData,
+                    vehicles: [vehicle],
+                  }}
                   onReset={resetAll}
                 />
               )}
