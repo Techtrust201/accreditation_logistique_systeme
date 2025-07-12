@@ -4,7 +4,6 @@ import { FilterBar } from "@/components/logisticien/FilterBar";
 import { AccreditationTable } from "@/components/logisticien/AccreditationTable";
 import { buildLink } from "@/lib/url";
 import AccreditationFormCard from "@/components/logisticien/AccreditationFormCard";
-import Link from "next/link";
 
 /* ---------- Page Dashboard ---------- */
 export default async function LogisticienDashboard({

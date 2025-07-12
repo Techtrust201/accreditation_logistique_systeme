@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import StatusPill from "./StatusPill";
 import type { Accreditation, AccreditationStatus } from "@/types";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Info } from "lucide-react";
+import { Pencil, Trash2, Info, PlusCircle } from "lucide-react";
 import VehicleForm from "@/components/accreditation/VehicleForm";
+import type { Vehicle } from "@/types";
 
 const EVENT_OPTIONS = [
   { value: "festival", label: "Festival du Film" },
@@ -27,50 +28,39 @@ export default function AccreditationFormCard({ acc }: Props) {
   const [unloading, setUnloading] = useState(acc.unloading ?? "");
   const [saving, setSaving] = useState(false);
 
-  const [phoneCode, setPhoneCode] = useState(
-    acc.vehicles[0]?.phoneCode ?? "+33"
-  );
-  const [phoneNumber, setPhoneNumber] = useState(
-    acc.vehicles[0]?.phoneNumber ?? ""
-  );
-  const [arrDate, setArrDate] = useState(acc.vehicles[0]?.date ?? "");
-  const [arrTime, setArrTime] = useState(acc.vehicles[0]?.time ?? "");
-  const [size, setSize] = useState(acc.vehicles[0]?.size ?? "");
-  const [city, setCity] = useState(acc.vehicles[0]?.city ?? "");
   const [event, setEvent] = useState(acc.event ?? "");
   const [message, setMessage] = useState(acc.message ?? "");
-  const [unloadSide, setUnloadSide] = useState(
-    acc.vehicles[0]?.unloading ?? "lat"
-  );
 
   const [email, setEmail] = useState(acc.email ?? "");
   const [sending, setSending] = useState(false);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [newVehicle, setNewVehicle] = useState({
     plate: "",
-    size: "",
+    size: "" as Vehicle["size"],
     phoneCode: "+33",
     phoneNumber: "",
     date: "",
     time: "",
     city: "",
-    unloading: "lat",
+    unloading: "lat" as Vehicle["unloading"],
   });
 
   const [emailHistory, setEmailHistory] = useState<
     { email: string; sentAt: string }[]
   >([]);
-  async function refreshEmailHistory() {
+
+  const refreshEmailHistory = useCallback(async () => {
     const res = await fetch(`/api/accreditations/${acc.id}/emails`);
     if (res.ok) setEmailHistory(await res.json());
-  }
-  useEffect(() => {
-    refreshEmailHistory();
   }, [acc.id]);
 
+  useEffect(() => {
+    refreshEmailHistory();
+  }, [refreshEmailHistory]);
+
   const [editVehicleId, setEditVehicleId] = useState<number | null>(null);
-  const [editVehicle, setEditVehicle] = useState<any>(null);
-  async function handleEditVehicle(v) {
+  const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
+  async function handleEditVehicle(v: Vehicle) {
     setEditVehicleId(v.id);
     setEditVehicle({ ...v });
   }
@@ -88,7 +78,7 @@ export default function AccreditationFormCard({ acc }: Props) {
       alert("Erreur modification véhicule");
     }
   }
-  async function handleDeleteVehicle(id) {
+  async function handleDeleteVehicle(id: number) {
     if (!confirm("Supprimer ce véhicule ?")) return;
     const res = await fetch(`/api/vehicles/${id}`, { method: "DELETE" });
     if (res.ok) router.refresh();
@@ -111,13 +101,13 @@ export default function AccreditationFormCard({ acc }: Props) {
           vehicles: [
             {
               ...acc.vehicles[0],
-              phoneCode,
-              phoneNumber,
-              date: arrDate,
-              time: arrTime,
-              size,
-              city,
-              unloading: unloadSide,
+              phoneCode: acc.vehicles[0]?.phoneCode ?? "+33",
+              phoneNumber: acc.vehicles[0]?.phoneNumber ?? "",
+              date: acc.vehicles[0]?.date ?? "",
+              time: acc.vehicles[0]?.time ?? "",
+              size: acc.vehicles[0]?.size ?? "",
+              city: acc.vehicles[0]?.city ?? "",
+              unloading: acc.vehicles[0]?.unloading ?? "lat",
             },
           ],
         }),
@@ -177,11 +167,11 @@ export default function AccreditationFormCard({ acc }: Props) {
 
   const [showEntryConfirm, setShowEntryConfirm] = useState(false);
 
-  function formatDuration(entryAt, exitAt) {
+  function formatDuration(entryAt: string | null, exitAt: string | null) {
     if (!entryAt || !exitAt) return "-";
     const d1 = new Date(entryAt);
     const d2 = new Date(exitAt);
-    const ms = d2 - d1;
+    const ms = d2.getTime() - d1.getTime();
     if (ms <= 0) return "-";
     const min = Math.floor(ms / 60000) % 60;
     const h = Math.floor(ms / 3600000);
@@ -277,9 +267,11 @@ export default function AccreditationFormCard({ acc }: Props) {
                         <tr>
                           <td colSpan={8} className="bg-gray-50 p-6">
                             <VehicleForm
-                              data={editVehicle}
+                              data={editVehicle!}
                               update={(patch) =>
-                                setEditVehicle((veh) => ({ ...veh, ...patch }))
+                                setEditVehicle((veh) =>
+                                  veh ? { ...veh, ...patch } : null
+                                )
                               }
                               onValidityChange={() => {}}
                             />
@@ -354,13 +346,19 @@ export default function AccreditationFormCard({ acc }: Props) {
                 </select>
               ) : (
                 <select
-                  className={`w-full h-10 rounded-lg md:rounded-xl border border-gray-400 px-3 md:px-4 focus:ring-2 focus:ring-[#4F587E] focus:border-[#4F587E] transition-all duration-200 bg-white text-sm md:text-base ${status === "ENTREE" ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
+                  className={`w-full h-10 rounded-lg md:rounded-xl border border-gray-400 px-3 md:px-4 focus:ring-2 focus:ring-[#4F587E] focus:border-[#4F587E] transition-all duration-200 bg-white text-sm md:text-base ${(status as AccreditationStatus) === "ENTREE" ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
                   value={status}
                   onChange={(e) => {
                     const val = e.target.value as AccreditationStatus;
-                    if (status !== "ENTREE" && val === "ENTREE") {
+                    if (
+                      (status as AccreditationStatus) !== "ENTREE" &&
+                      val === "ENTREE"
+                    ) {
                       setShowEntryConfirm(true);
-                    } else if (status === "ENTREE" && val !== "ENTREE") {
+                    } else if (
+                      (status as AccreditationStatus) === "ENTREE" &&
+                      val !== "ENTREE"
+                    ) {
                       alert(
                         "Impossible de revenir à un statut antérieur après l'entrée."
                       );
@@ -379,7 +377,7 @@ export default function AccreditationFormCard({ acc }: Props) {
               )}
               {status === "ENTREE" && (
                 <span className="text-xs text-gray-500 mt-1">
-                  Passer à 'Sortie' pour clôturer la présence
+                  Passer à &apos;Sortie&apos; pour clôturer la présence
                 </span>
               )}
               {status === "SORTIE" && (
@@ -402,7 +400,7 @@ export default function AccreditationFormCard({ acc }: Props) {
           {/* Company */}
           <div className="flex flex-col">
             <label className="font-semibold mb-3 text-gray-800">
-              Nom de l'entreprise
+              Nom de l&apos;entreprise
             </label>
             <input
               className="w-full h-10 rounded-lg md:rounded-xl border border-gray-400 px-3 md:px-4 focus:ring-2 focus:ring-[#4F587E] focus:border-[#4F587E] transition-all duration-200 bg-white text-sm md:text-base"
@@ -473,7 +471,10 @@ export default function AccreditationFormCard({ acc }: Props) {
             </label>
             <input
               className="w-full h-12 rounded-xl border border-gray-400 px-4 bg-gray-100 text-red-700 font-semibold focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-              value={formatDuration(acc.entryAt, acc.exitAt)}
+              value={formatDuration(
+                acc.entryAt?.toISOString() ?? null,
+                acc.exitAt?.toISOString() ?? null
+              )}
               readOnly
             />
           </div>
@@ -527,7 +528,7 @@ export default function AccreditationFormCard({ acc }: Props) {
                 </span>
               </div>
               <VehicleForm
-                data={newVehicle}
+                data={newVehicle as Vehicle}
                 update={(patch) => setNewVehicle((v) => ({ ...v, ...patch }))}
                 onValidityChange={() => {}}
               />
@@ -547,7 +548,7 @@ export default function AccreditationFormCard({ acc }: Props) {
           <div className="px-6 pb-6">
             <h3 className="font-semibold mb-4 text-base text-gray-800 flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              Historique des envois d'e-mails
+              Historique des envois d&apos;e-mails
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm border border-gray-200 rounded-xl overflow-hidden min-w-full shadow-sm">
@@ -557,7 +558,7 @@ export default function AccreditationFormCard({ acc }: Props) {
                       E-mail
                     </th>
                     <th className="p-4 text-left font-semibold text-gray-700">
-                      Date d'envoi
+                      Date d&apos;envoi
                     </th>
                   </tr>
                 </thead>
@@ -583,11 +584,11 @@ export default function AccreditationFormCard({ acc }: Props) {
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 border border-gray-200">
               <h2 className="text-lg font-bold mb-4 text-gray-900 text-center">
-                Confirmer l'entrée du véhicule
+                Confirmer l&apos;entrée du véhicule
               </h2>
               <p className="mb-6 text-gray-700 leading-relaxed text-center">
-                Attention : si vous validez l'entrée, le chrono de présence sera
-                activé pour ce véhicule.
+                Attention : si vous validez l&apos;entrée, le chrono de présence
+                sera activé pour ce véhicule.
                 <br />
                 <span className="font-semibold text-red-600">
                   Cette action est irréversible.
@@ -595,7 +596,7 @@ export default function AccreditationFormCard({ acc }: Props) {
                 La durée sur site sera calculée automatiquement lors de la
                 sortie.
                 <br />
-                Confirmez-vous l'entrée ?
+                Confirmez-vous l&apos;entrée ?
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-6 mt-8">
                 <button
@@ -611,7 +612,7 @@ export default function AccreditationFormCard({ acc }: Props) {
                   }}
                   className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#4F587E] text-white font-semibold shadow hover:bg-[#3B4252] transition"
                 >
-                  Valider l'entrée
+                  Valider l&apos;entrée
                 </button>
               </div>
             </div>

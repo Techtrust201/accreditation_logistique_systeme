@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { Accreditation } from "@/types";
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const { id } = params;
+  const { id } = await params;
 
   const acc = await prisma.accreditation.findUnique({
     where: { id },

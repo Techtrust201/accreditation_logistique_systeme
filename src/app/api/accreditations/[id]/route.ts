@@ -64,7 +64,7 @@ export async function PATCH(
     await prisma.vehicle.deleteMany({ where: { accreditationId: id } });
     if (vehicles.length) {
       await prisma.vehicle.createMany({
-        data: vehicles.map(({ id: _unused, ...v }) => ({
+        data: vehicles.map(({ id: _, ...v }) => ({
           ...v,
           accreditationId: id,
         })),

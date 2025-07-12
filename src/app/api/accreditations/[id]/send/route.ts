@@ -15,12 +15,11 @@ export async function POST(
     });
     if (!acc) return new Response("Not found", { status: 404 });
 
-    // @ts-ignore - propriétés ajoutées par migration
-    const targetEmail = email || (acc as any).email;
+    const targetEmail = email || (acc as { email?: string }).email;
     if (!targetEmail) return new Response("Email manquant", { status: 400 });
 
     // Met à jour le champ email si nouvel email
-    if (!(acc as any).email && email) {
+    if (!(acc as { email?: string }).email && email) {
       await prisma.accreditation.update({
         where: { id: acc.id },
         data: { email },
@@ -59,14 +58,13 @@ export async function POST(
         {
           filename: "accreditation.pdf",
           content: pdfBuffer.toString("base64"),
-          type: "application/pdf",
         },
       ],
     });
 
     await prisma.accreditation.update({
       where: { id: acc.id },
-      data: { sentAt: new Date(), email: targetEmail } as any,
+      data: { sentAt: new Date(), email: targetEmail },
     });
 
     await prisma.accreditationEmailHistory.create({

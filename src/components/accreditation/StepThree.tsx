@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import Image from "next/image";
 
 interface Data {
   message: string;
@@ -19,12 +20,14 @@ export default function StepThree({ data, update, onValidityChange }: Props) {
   useEffect(() => onValidityChange(valid), [valid, onValidityChange]);
 
   return (
-    <div className="flex flex-col w-full lg:min-h-[560px]">
+    <div className="flex flex-col w-full">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <img
+          <Image
             src="/accreditation/progressbar/Vector (2).svg"
             alt="Message"
+            width={20}
+            height={20}
             className="w-5 h-5"
           />
           <h2 className="text-lg font-bold">Message</h2>

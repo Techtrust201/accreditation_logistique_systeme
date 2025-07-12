@@ -2,6 +2,7 @@
 import { useEffect, useId } from "react";
 import type { Vehicle } from "@/types";
 import CityAutocomplete from "@/components/CityAutocomplete";
+import Image from "next/image";
 
 interface Props {
   data: Vehicle;
@@ -53,9 +54,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
         {/* Plaque */}
         <div className="flex-1 min-w-[180px]">
           <label className="text-sm font-semibold flex items-center gap-1 mb-1">
-            <img
+            <Image
               src="/accreditation/pict_page2/Group 1.svg"
+              width={16}
+              height={16}
               className="w-4 h-4"
+              alt="Plaque"
             />{" "}
             Plaque
           </label>
@@ -71,9 +75,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
         {/* Taille */}
         <div className="flex-1 min-w-[180px]">
           <label className="text-sm font-semibold flex items-center gap-1 mb-1">
-            <img
+            <Image
               src="/accreditation/pict_page2/Vector (14).svg"
+              width={16}
+              height={16}
               className="w-4 h-4"
+              alt="Taille du véhicule"
             />{" "}
             Taille du véhicule
           </label>
@@ -97,9 +104,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
         {/* Téléphone */}
         <div className="flex-1 min-w-[180px]">
           <label className="text-sm font-semibold flex items-center gap-1 mb-1">
-            <img
+            <Image
               src="/accreditation/pict_page2/Vector (15).svg"
+              width={16}
+              height={16}
               className="w-4 h-4"
+              alt="N° du conducteur"
             />{" "}
             N° du conducteur
           </label>
@@ -131,9 +141,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
         {/* Date */}
         <div className="flex-1 min-w-[180px]">
           <label className="text-sm font-semibold flex items-center gap-1 mb-1">
-            <img
+            <Image
               src="/accreditation/pict_page2/Vector (10).svg"
+              width={16}
+              height={16}
               className="w-4 h-4"
+              alt="Date d'arrivée"
             />{" "}
             Date d&apos;arrivée
           </label>
@@ -149,9 +162,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
         {/* Time */}
         <div className="flex-1 min-w-[180px]">
           <label className="text-sm font-semibold flex items-center gap-1 mb-1">
-            <img
+            <Image
               src="/accreditation/pict_page2/Vector (11).svg"
+              width={16}
+              height={16}
               className="w-4 h-4"
+              alt="Heure d'arrivée"
             />{" "}
             Heure d&apos;arrivée
             <span className="font-normal text-xs text-gray-500">
@@ -179,9 +195,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
         {/* City */}
         <div className="flex-1 min-w-[180px]">
           <label className="text-sm font-semibold flex items-center gap-1 mb-1">
-            <img
+            <Image
               src="/accreditation/pict_page2/Vector (13).svg"
+              width={16}
+              height={16}
               className="w-4 h-4"
+              alt="Ville de départ"
             />{" "}
             Ville de départ
           </label>
@@ -208,9 +227,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
               checked={data.unloading === "lat"}
               onChange={() => update({ unloading: "lat" })}
             />
-            <img
+            <Image
               src="/accreditation/pict_page2/Vector (4).svg"
+              width={24}
+              height={24}
               className="w-6 h-6"
+              alt="Latéral"
             />{" "}
             Latéral
           </label>
@@ -222,9 +244,12 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
               checked={data.unloading === "rear"}
               onChange={() => update({ unloading: "rear" })}
             />
-            <img
+            <Image
               src="/accreditation/pict_page2/Vector (5).svg"
+              width={24}
+              height={24}
               className="w-6 h-6"
+              alt="Arrière"
             />{" "}
             Arrière
           </label>

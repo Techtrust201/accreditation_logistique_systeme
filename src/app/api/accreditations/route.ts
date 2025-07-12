@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
-import type { Vehicle } from "@/types";
 // import type { Accreditation } from "@/types";
 
 export async function GET() {

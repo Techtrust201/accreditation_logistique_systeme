@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { Vehicle } from "@/types";
 
 interface Props {
@@ -124,9 +125,11 @@ export default function StepFourLog({ data, onReset }: Props) {
       <div className="border-2 border-[#3daaa4] rounded-lg px-6 py-4 w-full max-w-xl text-left space-y-4">
         {/* Header */}
         <div className="flex items-start gap-3">
-          <img
+          <Image
             src="/accreditation/progressbar/Vector (3).svg"
             alt="PDF"
+            width={24}
+            height={24}
             className="w-6 h-6 shrink-0 mt-0.5"
           />
           <h2 className="text-lg font-semibold">Accréditation créée</h2>

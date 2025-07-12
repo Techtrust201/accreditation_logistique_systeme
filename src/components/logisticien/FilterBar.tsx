@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
 
 export interface FilterBarProps {
   searchParams: Record<string, string>;

@@ -1,6 +1,5 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest } from "next/server";
+// import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "qrcode";
 
@@ -52,14 +51,15 @@ export async function POST(req: NextRequest) {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
     const drawText = (
-      page: any,
+      page: unknown, // PDFPage type not exported by pdf-lib
       text: string,
       x: number,
       y: number,
       size = 12,
       options: { color?: [number, number, number] } = {}
     ) => {
-      page.drawText(text, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (page as any).drawText(text, {
         x,
         y,
         size,
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     // Helper: retourne le nouveau y après dessin du texte wrap.
     const drawWrapped = (
-      page: any,
+      page: unknown, // PDFPage type not exported by pdf-lib
       text: string,
       x: number,
       y: number,
@@ -155,6 +155,7 @@ export async function POST(req: NextRequest) {
 
     addLabelVal("Nom de l'entreprise", company);
     addLabelVal("Stand desservi", stand);
+    addLabelVal("Événement", event);
     addLabelVal("Déchargement par", unloading.toUpperCase());
 
     // Statut

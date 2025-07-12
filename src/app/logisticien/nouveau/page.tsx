@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import StepOne from "@/components/accreditation/StepOne";
 import StepTwo from "@/components/accreditation/StepTwo";
 import StepThree from "@/components/accreditation/StepThree";
@@ -119,9 +120,11 @@ export default function LogisticienNew() {
               step === 2 ? "lg:h-full" : "lg:h-auto"
             } p-6 hidden lg:block`}
           >
-            <img
+            <Image
               src="/accreditation/pict_page1/palais.jpg"
               alt="Palais des Festivals"
+              width={400}
+              height={300}
               className="object-cover grayscale contrast-125 rounded-lg w-full h-full"
             />
           </div>
@@ -147,10 +150,11 @@ export default function LogisticienNew() {
                             : "bg-white border-gray-300"
                       }`}
                     >
-                      {" "}
-                      <img
+                      <Image
                         src={svgPath}
                         alt={`step ${idx + 1}`}
+                        width={24}
+                        height={24}
                         className="w-6 h-6"
                       />
                     </div>

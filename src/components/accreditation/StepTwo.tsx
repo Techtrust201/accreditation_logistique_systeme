@@ -22,7 +22,7 @@ export default function StepTwo({ data, update, onValidityChange }: Props) {
   }, [data, onValidityChange]);
 
   return (
-    <div className="space-y-6">
+    <div>
       <VehicleForm
         data={data}
         update={(patch) => update({ ...data, ...patch })}

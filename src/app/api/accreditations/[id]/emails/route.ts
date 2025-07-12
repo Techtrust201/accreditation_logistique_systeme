@@ -2,11 +2,10 @@ import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(
-  _req: NextRequest,
-  context: { params: { id: string } } // ← le typage reste identique
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  // 🔑 attendre params avant de lire id
-  const { id } = context.params;
+  const { id } = await params;
 
   const history = await prisma.accreditationEmailHistory.findMany({
     where: { accreditationId: id },

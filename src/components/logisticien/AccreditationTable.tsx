@@ -25,8 +25,6 @@ export interface AccreditationTableProps {
   filteredCount: number;
   perPage: number;
   searchParams: Record<string, string>;
-  sort: string;
-  dir: string;
 }
 
 export function AccreditationTable({
@@ -36,8 +34,6 @@ export function AccreditationTable({
   filteredCount,
   perPage,
   searchParams,
-  sort,
-  dir,
 }: AccreditationTableProps) {
   const router = useRouter();
   async function handleDelete(id: string) {

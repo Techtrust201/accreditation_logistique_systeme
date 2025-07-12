@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import Image from "next/image";
 
 type EventKey = "festival" | "miptv" | "mipcom";
 
@@ -43,7 +44,7 @@ export default function StepOne({ data, update, onValidityChange }: Props) {
   useEffect(() => onValidityChange(isValid), [isValid, onValidityChange]);
 
   return (
-    <div className="flex flex-col w-full lg:min-h-[560px]">
+    <div className="flex flex-col w-full ">
       <div className="flex-1 p-0 sm:p-0 flex flex-col justify-between">
         <div>
           <h2 className="text-lg font-bold mb-4">Identification</h2>
@@ -128,9 +129,11 @@ export default function StepOne({ data, update, onValidityChange }: Props) {
                 }`}
               >
                 <div className="bg-white shadow-md rounded flex items-center justify-center p-2 mb-1 w-full h-16">
-                  <img
+                  <Image
                     src={logo}
                     alt={label}
+                    width={48}
+                    height={32}
                     className="object-contain w-12 h-8"
                   />
                 </div>

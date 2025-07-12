@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import StepOne from "@/components/accreditation/StepOne";
 import StepTwo from "@/components/accreditation/StepTwo";
 import StepThree from "@/components/accreditation/StepThree";
@@ -113,14 +114,20 @@ export default function AccreditationPage() {
       }}
     >
       {/* Header bandeau bleu */}
-      <header className="py-6 px-4 flex flex-col items-center text-white gap-1">
-        <h1 className="text-2xl font-bold">Demande d&apos;accréditation</h1>
-        <p className="text-sm opacity-80">
+      {/* <header className="px-4 flex flex-col items-center text-white gap-1">
+        <h1 className="text-4xl font-bold">Demande d&apos;accréditation</h1>
+        <p className="text-lg opacity-80">
           Suivez les étapes pour réaliser votre demande
         </p>
-      </header>
+      </header> */}
 
-      <main className="flex-1 flex flex-col items-center pb-28 px-4 sm:px-6 lg:px-8 mt-4">
+      <main className="mb-48 flex-1 flex flex-col justify-evenly items-center px-4 sm:px-6 lg:px-8">
+        <div className="px-4 flex flex-col items-center text-white gap-1">
+          <h1 className="text-4xl font-bold">Demande d&apos;accréditation</h1>
+          <p className="text-lg opacity-80">
+            Suivez les étapes pour réaliser votre demande
+          </p>
+        </div>
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col lg:flex-row w-11/12 lg:w-3/4 lg:max-h-[65vh]">
           {/* Static Image */}
           <div
@@ -128,9 +135,17 @@ export default function AccreditationPage() {
               step === 2 ? "lg:h-full" : "lg:h-auto"
             } p-6 hidden lg:block`}
           >
-            <img
+            {/* <img
               src="/accreditation/pict_page1/palais.jpg"
               alt="Palais des Festivals"
+              className="object-cover grayscale contrast-125 rounded-lg w-full h-full"
+            /> */}
+            <Image
+              src="/accreditation/pict_page1/palais.jpg"
+              alt="Palais des Festivals"
+              width={1000}
+              height={100}
+              // fill       // l’image occupe tout le conteneur
               className="object-cover grayscale contrast-125 rounded-lg w-full h-full"
             />
           </div>
@@ -157,10 +172,11 @@ export default function AccreditationPage() {
                             : "bg-white border-gray-300"
                       }`}
                     >
-                      <img
+                      <Image
                         src={svgPath}
                         alt={`step ${idx + 1}`}
-                        className="w-6 h-6"
+                        width={20}
+                        height={20}
                       />
                     </div>
                     {idx < 3 && (
