@@ -146,7 +146,7 @@ export default function AccreditationTable({
         <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto bg-white">
           <table className="min-w-full text-xs md:text-base border-collapse">
             <thead className="sticky top-0 z-10">
-              <tr className="shadow-lg">
+              <tr className="bg-white text-gray-900 shadow-lg border-b border-gray-200">
                 {/* COLONNE STATUT (triable) */}
                 <th
                   onClick={() => toggleSort("status")}
