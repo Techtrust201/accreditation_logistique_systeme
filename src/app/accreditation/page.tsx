@@ -7,10 +7,10 @@ import StepOne from "@/components/accreditation/StepOne";
 import StepTwo from "@/components/accreditation/StepTwo";
 import StepThree from "@/components/accreditation/StepThree";
 import StepFour from "@/components/accreditation/StepFour";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import type { Vehicle } from "@/types";
 
-export default function AccreditationPage() {
+function AccreditationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const step = Number(searchParams.get("step") ?? "1");
@@ -145,7 +145,7 @@ export default function AccreditationPage() {
               alt="Palais des Festivals"
               width={1000}
               height={100}
-              // fill       // l’image occupe tout le conteneur
+              // fill       // l'image occupe tout le conteneur
               className="object-cover grayscale contrast-125 rounded-lg w-full h-full"
             />
           </div>
@@ -260,5 +260,22 @@ export default function AccreditationPage() {
         </Link>
       </footer>
     </div>
+  );
+}
+
+export default function AccreditationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#353c52] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Chargement...</p>
+          </div>
+        </div>
+      }
+    >
+      <AccreditationPageContent />
+    </Suspense>
   );
 }

@@ -10,7 +10,7 @@ export async function readAccreditations(): Promise<Accreditation[]> {
   return rows.map(
     (a): Accreditation => ({
       id: a.id,
-      createdAt: a.createdAt.toISOString(),
+      createdAt: a.createdAt, // On garde le type Date pour correspondre au type attendu
       company: a.company,
       stand: a.stand,
       unloading: a.unloading,
@@ -18,8 +18,8 @@ export async function readAccreditations(): Promise<Accreditation[]> {
       message: a.message || "",
       consent: a.consent,
       status: a.status as Accreditation["status"],
-      entryAt: a.entryAt,
-      exitAt: a.exitAt,
+      entryAt: a.entryAt ?? undefined,
+      exitAt: a.exitAt ?? undefined,
       vehicles: a.vehicles.map(
         (v): Vehicle => ({
           id: v.id,

@@ -5,7 +5,11 @@ import MobileAccreditationEditCard from "@/components/logisticien/MobileAccredit
 import prisma from "@/lib/prisma";
 import { Accreditation } from "@/types";
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 
   const acc = await prisma.accreditation.findUnique({

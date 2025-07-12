@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import StepOne from "@/components/accreditation/StepOne";
 import StepTwo from "@/components/accreditation/StepTwo";
@@ -10,7 +10,7 @@ import StepThree from "@/components/accreditation/StepThree";
 import StepFourLog from "@/components/accreditation/StepFourLog";
 import type { Vehicle } from "@/types";
 
-export default function LogisticienNew() {
+function LogisticienNewContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const step = Number(searchParams.get("step") ?? "1");
@@ -238,5 +238,22 @@ export default function LogisticienNew() {
         </Link>
       </footer>
     </div>
+  );
+}
+
+export default function LogisticienNew() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#353c52] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Chargement...</p>
+          </div>
+        </div>
+      }
+    >
+      <LogisticienNewContent />
+    </Suspense>
   );
 }

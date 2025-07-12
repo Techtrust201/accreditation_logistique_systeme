@@ -5,8 +5,9 @@ import type { AccreditationStatus } from "@/types";
 /* ----------------------- GET ----------------------- */
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const { id } = params;
   const acc = await prisma.accreditation.findUnique({
     where: { id },
@@ -19,11 +20,11 @@ export async function GET(
 /* ---------------------- PATCH ---------------------- */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id: accreditationId } = await params;
   const acc = await prisma.accreditation.findUnique({
-    where: { id },
+    where: { id: accreditationId },
     include: { vehicles: true },
   });
   if (!acc) return new Response("Not found", { status: 404 });
@@ -55,26 +56,30 @@ export async function PATCH(
   if (status === "SORTIE" && !acc.exitAt) updates.exitAt = new Date();
 
   await prisma.accreditation.update({
-    where: { id },
+    where: { id: accreditationId },
     data: updates,
   });
 
   /* -- remplacement véhicules -- */
   if (Array.isArray(vehicles)) {
-    await prisma.vehicle.deleteMany({ where: { accreditationId: id } });
+    await prisma.vehicle.deleteMany({ where: { accreditationId } });
     if (vehicles.length) {
       await prisma.vehicle.createMany({
-        data: vehicles.map(({ id: _, ...v }) => ({
-          ...v,
-          accreditationId: id,
-        })),
+        data: vehicles.map((vehicle) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, ...vehicleData } = vehicle;
+          return {
+            ...vehicleData,
+            accreditationId,
+          };
+        }),
       });
     }
   }
 
   // renvoi de la version à jour
   const accWithVehicles = await prisma.accreditation.findUnique({
-    where: { id },
+    where: { id: accreditationId },
     include: { vehicles: true },
   });
 
@@ -84,8 +89,9 @@ export async function PATCH(
 /* --------------------- DELETE ---------------------- */
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const { id } = params;
   try {
     await prisma.accreditation.delete({ where: { id } });

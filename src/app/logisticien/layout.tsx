@@ -71,6 +71,7 @@ export default function LogisticienLayout({
                 <Link
                   href="/logisticien"
                   className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/10"
+                  onClick={() => setSidebarOpen(false)}
                 >
                   <Image
                     src="/logisticien/Vector%20(17).svg"
@@ -85,6 +86,7 @@ export default function LogisticienLayout({
                 <Link
                   href="/logisticien/nouveau?step=1"
                   className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/10"
+                  onClick={() => setSidebarOpen(false)}
                 >
                   <Image
                     src="/logisticien/Vector%20(18).svg"
@@ -123,6 +125,7 @@ export default function LogisticienLayout({
                 <Link
                   href="#"
                   className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/10"
+                  onClick={() => setSidebarOpen(false)}
                 >
                   <Image
                     src="/logisticien/Group%201%20(1).svg"
@@ -137,6 +140,7 @@ export default function LogisticienLayout({
                 <Link
                   href="#"
                   className="flex items-center gap-2 px-2 py-1 rounded hover:bg-white/10"
+                  onClick={() => setSidebarOpen(false)}
                 >
                   <Image
                     src="/logisticien/Vector%20(20).svg"
@@ -155,6 +159,7 @@ export default function LogisticienLayout({
           <Link
             href="/logout"
             className="flex items-center gap-2 hover:underline"
+            onClick={() => setSidebarOpen(false)}
           >
             <Image
               src="/logisticien/Vector%20(21).svg"

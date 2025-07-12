@@ -1,16 +1,16 @@
 import { readAccreditations } from "@/lib/store";
 import { redirect } from "next/navigation";
 import { FilterBar } from "@/components/logisticien/FilterBar";
-import { AccreditationTable } from "@/components/logisticien/AccreditationTable";
+import AccreditationTable from "@/components/logisticien/AccreditationTable";
 import { buildLink } from "@/lib/url";
 import AccreditationFormCard from "@/components/logisticien/AccreditationFormCard";
+import type { SortDirection } from "@/components/ui/table";
 
 /* ---------- Page Dashboard ---------- */
-export default async function LogisticienDashboard({
-  searchParams,
-}: {
+export default async function LogisticienDashboard(props: {
   searchParams: Promise<Record<string, string>>;
 }) {
+  const searchParams = await props.searchParams;
   // Next.js 15 : searchParams est une Promise → on attend son résultat.
   const paramsObj = await searchParams;
   const data = await readAccreditations();
@@ -73,7 +73,15 @@ export default async function LogisticienDashboard({
   }
 
   // --- Sorting ---
-  const validSortKeys = ["status", "id", "plate", "createdAt"] as const;
+  const validSortKeys = [
+    "status",
+    "id",
+    "createdAt",
+    "company",
+    "entryAt",
+    "exitAt",
+    "duration",
+  ] as const;
   const sortKey = (validSortKeys as readonly string[]).includes(sort)
     ? (sort as (typeof validSortKeys)[number])
     : "createdAt";
@@ -92,9 +100,28 @@ export default async function LogisticienDashboard({
         aVal = a.id;
         bVal = b.id;
         break;
-      case "plate":
-        aVal = a.vehicles?.[0]?.plate ?? "";
-        bVal = b.vehicles?.[0]?.plate ?? "";
+      case "company":
+        aVal = (a.company as string) ?? "";
+        bVal = (b.company as string) ?? "";
+        break;
+      case "entryAt":
+        aVal = a.entryAt ? new Date(a.entryAt) : new Date(0);
+        bVal = b.entryAt ? new Date(b.entryAt) : new Date(0);
+        break;
+      case "exitAt":
+        aVal = a.exitAt ? new Date(a.exitAt) : new Date(0);
+        bVal = b.exitAt ? new Date(b.exitAt) : new Date(0);
+        break;
+      case "duration":
+        // Calcul de la durée en millisecondes
+        const getDuration = (acc: typeof a) => {
+          if (!acc.entryAt || !acc.exitAt) return 0;
+          return (
+            new Date(acc.exitAt).getTime() - new Date(acc.entryAt).getTime()
+          );
+        };
+        aVal = getDuration(a);
+        bVal = getDuration(b);
         break;
       default:
         // createdAt
@@ -162,8 +189,8 @@ export default async function LogisticienDashboard({
             filteredCount={filtered.length}
             perPage={perPage}
             searchParams={paramsObj}
-            sort={sort}
-            dir={dir}
+            sort={sortKey}
+            dir={dir as SortDirection}
           />
 
           <div className="hidden md:block">
