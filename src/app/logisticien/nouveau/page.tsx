@@ -142,11 +142,11 @@ function LogisticienNewContent() {
                 return (
                   <div key={idx} className="flex items-center gap-0.5 flex-1">
                     <div
-                      className={`w-10 h-10 flex items-center justify-center rounded-full border-2 ${
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg border-2 ${
                         done
                           ? "bg-[#3DAAA4] border-[#3DAAA4]"
                           : active
-                            ? "bg-primary border-primary"
+                            ? "border-primary"
                             : "bg-white border-gray-300"
                       }`}
                     >
