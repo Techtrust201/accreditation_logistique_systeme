@@ -119,10 +119,15 @@ export default function AccreditationTable({
 
   /* ----- suppression ----- */
   const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer cette accréditation ?")) return;
+    if (
+      !confirm(
+        "Êtes-vous sûr de vouloir supprimer définitivement cette accréditation ?\n\nCette action est irréversible et supprimera toutes les données associées."
+      )
+    )
+      return;
     const res = await fetch(`/api/accreditations/${id}`, { method: "DELETE" });
     if (res.ok) router.refresh();
-    else alert("Erreur suppression");
+    else alert("Erreur lors de la suppression");
   };
 
   return (
@@ -181,6 +186,16 @@ export default function AccreditationTable({
                     <span>Société</span>
                     <SortCaret active={sort === "company"} dir={dir} />
                   </div>
+                </th>
+
+                {/* COLONNE STAND DESSERVI */}
+                <th className="px-2 md:px-6 py-3 md:py-4 font-semibold text-xs md:text-sm text-center border-r border-white/20">
+                  <span>Stand desservi</span>
+                </th>
+
+                {/* COLONNE ÉVÉNEMENT */}
+                <th className="px-2 md:px-6 py-3 md:py-4 font-semibold text-xs md:text-sm text-center border-r border-white/20">
+                  <span>Événement</span>
                 </th>
 
                 {/* DATE (triable) */}
@@ -275,6 +290,16 @@ export default function AccreditationTable({
                   </td>
                   <td className="px-4 md:px-6 py-3 md:py-4 font-medium text-gray-800 text-center border-r border-gray-100">
                     {acc.company}
+                  </td>
+                  <td className="px-4 md:px-6 py-3 md:py-4 text-center border-r border-gray-100">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#4F587E]/10 text-[#4F587E]">
+                      {acc.stand || "-"}
+                    </span>
+                  </td>
+                  <td className="px-4 md:px-6 py-3 md:py-4 text-center border-r border-gray-100">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+                      {acc.event || "-"}
+                    </span>
                   </td>
                   <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap text-gray-600 text-center border-r border-gray-100">
                     {new Date(acc.createdAt).toLocaleDateString("fr-FR", {

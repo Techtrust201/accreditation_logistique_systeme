@@ -1,6 +1,11 @@
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import type { AccreditationStatus } from "@/types";
+import {
+  addHistoryEntry,
+  createStatusChangeEntry,
+  createInfoUpdatedEntry,
+} from "@/lib/history";
 
 /* ----------------------- GET ----------------------- */
 export async function GET(
@@ -59,6 +64,88 @@ export async function PATCH(
     where: { id: accreditationId },
     data: updates,
   });
+
+  // Enregistrer l'historique des changements
+  const changes: Promise<boolean>[] = [];
+
+  // Changement de statut
+  if (status !== acc.status) {
+    changes.push(
+      addHistoryEntry(
+        createStatusChangeEntry(accreditationId, acc.status, status, "system")
+      )
+    );
+  }
+
+  // Changements d'informations
+  if (company && company !== acc.company) {
+    changes.push(
+      addHistoryEntry(
+        createInfoUpdatedEntry(
+          accreditationId,
+          "company",
+          acc.company,
+          company,
+          "system"
+        )
+      )
+    );
+  }
+  if (stand && stand !== acc.stand) {
+    changes.push(
+      addHistoryEntry(
+        createInfoUpdatedEntry(
+          accreditationId,
+          "stand",
+          acc.stand,
+          stand,
+          "system"
+        )
+      )
+    );
+  }
+  if (unloading && unloading !== acc.unloading) {
+    changes.push(
+      addHistoryEntry(
+        createInfoUpdatedEntry(
+          accreditationId,
+          "unloading",
+          acc.unloading,
+          unloading,
+          "system"
+        )
+      )
+    );
+  }
+  if (event && event !== acc.event) {
+    changes.push(
+      addHistoryEntry(
+        createInfoUpdatedEntry(
+          accreditationId,
+          "event",
+          acc.event,
+          event,
+          "system"
+        )
+      )
+    );
+  }
+  if (message !== acc.message) {
+    changes.push(
+      addHistoryEntry(
+        createInfoUpdatedEntry(
+          accreditationId,
+          "message",
+          acc.message || "",
+          message || "",
+          "system"
+        )
+      )
+    );
+  }
+
+  // Attendre que tous les changements d'historique soient enregistrés
+  await Promise.all(changes);
 
   /* -- remplacement véhicules -- */
   if (Array.isArray(vehicles)) {

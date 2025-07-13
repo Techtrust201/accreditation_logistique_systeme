@@ -1,8 +1,12 @@
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { Resend } from "resend";
+import { addHistoryEntry, createEmailSentEntry } from "@/lib/history";
 
-export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     const { email } = (await req.json()) as { email?: string };
@@ -71,6 +75,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         email: targetEmail,
       },
     });
+
+    // Enregistrer l'historique de l'envoi d'email
+    await addHistoryEntry(createEmailSentEntry(acc.id, targetEmail, "system"));
 
     return new Response(null, { status: 200 });
   } catch (err) {

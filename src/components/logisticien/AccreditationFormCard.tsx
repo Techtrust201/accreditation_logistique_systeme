@@ -6,6 +6,7 @@ import type { Accreditation, AccreditationStatus } from "@/types";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Info, PlusCircle } from "lucide-react";
 import VehicleForm from "@/components/accreditation/VehicleForm";
+import AccreditationHistory from "./AccreditationHistory";
 import type { Vehicle } from "@/types";
 
 const EVENT_OPTIONS = [
@@ -579,6 +580,11 @@ export default function AccreditationFormCard({ acc }: Props) {
             </div>
           </div>
         )}
+
+        {/* Historique des modifications */}
+        <div className="px-6 pb-6">
+          <AccreditationHistory accreditationId={acc.id} />
+        </div>
         {/* Modal de confirmation entrée */}
         {showEntryConfirm && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

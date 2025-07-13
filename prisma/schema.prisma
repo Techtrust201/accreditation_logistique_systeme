@@ -19,6 +19,17 @@ enum AccreditationStatus {
   ABSENT
 }
 
+enum HistoryAction {
+  CREATED
+  STATUS_CHANGED
+  VEHICLE_ADDED
+  VEHICLE_REMOVED
+  VEHICLE_UPDATED
+  EMAIL_SENT
+  INFO_UPDATED
+  DELETED
+}
+
 model Accreditation {
   id          String               @id @default(uuid())
   createdAt   DateTime             @default(now())
@@ -36,6 +47,7 @@ model Accreditation {
 
   vehicles    Vehicle[]
   emailHistory AccreditationEmailHistory[]
+  history     AccreditationHistory[]
 }
 
 model Vehicle {
@@ -60,4 +72,18 @@ model AccreditationEmailHistory {
   accreditationId String
   email           String
   sentAt          DateTime      @default(now())
+}
+
+model AccreditationHistory {
+  id              Int             @id @default(autoincrement())
+  accreditation   Accreditation   @relation(fields: [accreditationId], references: [id], onDelete: Cascade)
+  accreditationId String
+  action          HistoryAction
+  field           String?         // Champ modifié (ex: "status", "company", etc.)
+  oldValue        String?         // Ancienne valeur
+  newValue        String?         // Nouvelle valeur
+  description     String          // Description lisible de l'action
+  userId          String?         // ID de l'utilisateur qui a fait la modification
+  userAgent       String?         // User agent pour tracer l'origine
+  createdAt       DateTime        @default(now())
 } 

@@ -1,5 +1,6 @@
 import { readAccreditations } from "@/lib/store";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { FilterBar } from "@/components/logisticien/FilterBar";
 import AccreditationTable from "@/components/logisticien/AccreditationTable";
 import { buildLink } from "@/lib/url";
@@ -170,12 +171,12 @@ export default async function LogisticienDashboard(props: {
       <div className="flex-shrink-0 p-2">
         <div className="flex justify-between items-center">
           <FilterBar searchParams={paramsObj} statusOptions={statusOptions} />
-          {/* <Link
+          <Link
             href="/logisticien/nouveau?step=1"
-            className="px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary-dark"
+            className="px-4 py-2 bg-[#4F587E] text-white rounded-lg text-sm hover:bg-[#3B4252] transition-colors duration-200 font-medium"
           >
             Nouvelle demande
-          </Link> */}
+          </Link>
         </div>
       </div>
 
