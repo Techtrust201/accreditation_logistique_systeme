@@ -31,6 +31,8 @@ export interface AccreditationTableProps {
     | "plate"
     | "createdAt"
     | "company"
+    | "stand"
+    | "event"
     | "entryAt"
     | "exitAt"
     | "duration";
@@ -104,6 +106,8 @@ export default function AccreditationTable({
       | "id"
       | "createdAt"
       | "company"
+      | "stand"
+      | "event"
       | "entryAt"
       | "exitAt"
       | "duration"
@@ -188,14 +192,39 @@ export default function AccreditationTable({
                   </div>
                 </th>
 
-                {/* COLONNE STAND DESSERVI */}
-                <th className="px-2 md:px-6 py-3 md:py-4 font-semibold text-xs md:text-sm text-center border-r border-white/20">
-                  <span>Stand desservi</span>
+                {/* COLONNE STAND DESSERVI (triable) */}
+                <th
+                  onClick={() => toggleSort("stand")}
+                  className="group px-2 md:px-6 py-3 md:py-4 font-semibold text-xs md:text-sm text-center cursor-pointer select-none hover:bg-white/10 transition-all duration-200 border-r border-white/20"
+                  aria-sort={
+                    sort === "stand"
+                      ? dir === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : "none"
+                  }
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>Stand desservi</span>
+                    <SortCaret active={sort === "stand"} dir={dir} />
+                  </div>
                 </th>
-
-                {/* COLONNE ÉVÉNEMENT */}
-                <th className="px-2 md:px-6 py-3 md:py-4 font-semibold text-xs md:text-sm text-center border-r border-white/20">
-                  <span>Événement</span>
+                {/* COLONNE ÉVÉNEMENT (triable) */}
+                <th
+                  onClick={() => toggleSort("event")}
+                  className="group px-2 md:px-6 py-3 md:py-4 font-semibold text-xs md:text-sm text-center cursor-pointer select-none hover:bg-white/10 transition-all duration-200 border-r border-white/20"
+                  aria-sort={
+                    sort === "event"
+                      ? dir === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : "none"
+                  }
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>Événement</span>
+                    <SortCaret active={sort === "event"} dir={dir} />
+                  </div>
                 </th>
 
                 {/* DATE (triable) */}

@@ -58,6 +58,7 @@ function LogisticienNewContent() {
   const [stepThreeData, setStepThreeData] = useState({
     message: "",
     consent: false,
+    email: "",
   });
 
   // 2. Fonctions de patch partiel pour chaque objet
@@ -68,9 +69,26 @@ function LogisticienNewContent() {
 
   // 3. Adapter les props passées aux Steps
   useEffect(() => {
-    setStepOneData(safeLoad("log_stepOneData", stepOneData));
-    setVehicle(safeLoad<Vehicle>("log_vehicle", vehicle));
-    setStepThreeData(safeLoad("log_stepThreeData", stepThreeData));
+    // On regarde si on a des query params pertinents
+    const company = searchParams.get("company") || "";
+    const stand = searchParams.get("stand") || "";
+    const unloading = searchParams.get("unloading") || "";
+    const event = searchParams.get("event") || "";
+    const message = searchParams.get("message") || "";
+    const email = searchParams.get("email") || "";
+    const city = searchParams.get("city") || "";
+    const hasQuery =
+      company || stand || unloading || event || message || email || city;
+
+    if (hasQuery) {
+      setStepOneData({ company, stand, unloading, event });
+      setVehicle({ ...defaultVehicle(), city });
+      setStepThreeData({ message, consent: false, email });
+    } else {
+      setStepOneData(safeLoad("log_stepOneData", stepOneData));
+      setVehicle(safeLoad<Vehicle>("log_vehicle", vehicle));
+      setStepThreeData(safeLoad("log_stepThreeData", stepThreeData));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -95,7 +113,7 @@ function LogisticienNewContent() {
   function resetAll() {
     setStepOneData({ company: "", stand: "", unloading: "", event: "" });
     setVehicle(defaultVehicle());
-    setStepThreeData({ message: "", consent: false });
+    setStepThreeData({ message: "", consent: false, email: "" });
     localStorage.removeItem("log_stepOneData");
     localStorage.removeItem("log_vehicle");
     localStorage.removeItem("log_stepThreeData");

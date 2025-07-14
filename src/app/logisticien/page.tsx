@@ -79,6 +79,8 @@ export default async function LogisticienDashboard(props: {
     "id",
     "createdAt",
     "company",
+    "stand",
+    "event",
     "entryAt",
     "exitAt",
     "duration",
@@ -104,6 +106,14 @@ export default async function LogisticienDashboard(props: {
       case "company":
         aVal = (a.company as string) ?? "";
         bVal = (b.company as string) ?? "";
+        break;
+      case "stand":
+        aVal = (a.stand as string) ?? "";
+        bVal = (b.stand as string) ?? "";
+        break;
+      case "event":
+        aVal = (a.event as string) ?? "";
+        bVal = (b.event as string) ?? "";
         break;
       case "entryAt":
         aVal = a.entryAt ? new Date(a.entryAt) : new Date(0);

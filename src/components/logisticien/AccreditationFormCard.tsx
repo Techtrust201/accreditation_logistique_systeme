@@ -179,6 +179,22 @@ export default function AccreditationFormCard({ acc }: Props) {
     return `${h}h ${min}min`;
   }
 
+  const handleDuplicateForNewVehicle = () => {
+    // On prépare tous les champs à dupliquer
+    const params = new URLSearchParams({
+      step: "1",
+      company,
+      stand,
+      unloading,
+      event,
+      message: message || "",
+      email: email || "",
+      // On prend la ville du premier véhicule s'il existe
+      city: acc.vehicles[0]?.city || "",
+    });
+    router.push(`/logisticien/nouveau?${params.toString()}`);
+  };
+
   return (
     <div className="bg-gray-50 border border-gray-300 rounded-lg md:rounded-2xl shadow-lg w-full max-h-[85vh] overflow-y-auto flex flex-col">
       {/* Header */}
@@ -187,7 +203,7 @@ export default function AccreditationFormCard({ acc }: Props) {
           <div className="p-2 bg-white/20 rounded-lg">
             <Info size={22} />
           </div>
-          Info accréditation
+          Infos accréditations
         </h1>
       </div>
 
@@ -511,7 +527,7 @@ export default function AccreditationFormCard({ acc }: Props) {
             {sending ? "Envoi…" : "Envoyer l'accréditation"}
           </button>
           <button
-            onClick={() => setShowAddVehicle((v) => !v)}
+            onClick={handleDuplicateForNewVehicle}
             className="w-full sm:w-auto px-4 md:px-6 py-2 md:py-3 bg-gray-200 text-gray-800 rounded-xl border border-gray-400 hover:bg-gray-300 transition font-semibold shadow text-sm md:text-base"
           >
             {showAddVehicle ? "Annuler" : "+ Ajouter un véhicule"}
