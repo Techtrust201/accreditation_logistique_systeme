@@ -67,7 +67,46 @@ export default function StepFourLog({ data, onReset }: Props) {
         setSuccess(false);
       }, 1200);
     } catch (err) {
+      console.error(err);
       setInfoMsg("Erreur lors de l'enregistrement.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function downloadPdf() {
+    try {
+      setLoading(true);
+      const saveRes = await fetch("/api/accreditations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!saveRes.ok) throw new Error("Erreur enregistrement");
+      const created = await saveRes.json();
+      const res = await fetch("/api/accreditation/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          id: created.id,
+          status: created.status,
+          entryAt: created.entryAt,
+          exitAt: created.exitAt,
+        }),
+      });
+      if (!res.ok) throw new Error("Erreur génération PDF");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "accreditation.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+      onReset();
+    } catch (err) {
+      console.error(err);
+      alert("Impossible de télécharger le PDF");
     } finally {
       setLoading(false);
     }
@@ -100,6 +139,7 @@ export default function StepFourLog({ data, onReset }: Props) {
       setInfoMsg("E-mail envoyé au destinataire. PDF généré.");
       setShowSendModal(false);
     } catch (err) {
+      console.error(err);
       setInfoMsg("Erreur lors de l'envoi de l'e-mail.");
     } finally {
       setLoading(false);
@@ -209,6 +249,14 @@ export default function StepFourLog({ data, onReset }: Props) {
               Nouvelle accréditation
             </button>
           )}
+          <button
+            onClick={downloadPdf}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-base bg-[#3daaa4] text-white shadow hover:bg-[#319b92] transition-all duration-150 disabled:opacity-60"
+          >
+            <Download size={20} />
+            {loading ? "Génération…" : "Télécharger l'accréditation"}
+          </button>
         </div>
       </div>
 

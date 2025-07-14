@@ -51,6 +51,7 @@ export default function StepFour({ data, onReset }: Props) {
         setSuccess(false);
       }, 1200);
     } catch (err) {
+      console.error(err);
       alert("Impossible d'enregistrer la demande");
     } finally {
       setLoading(false);
