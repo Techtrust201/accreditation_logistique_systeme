@@ -86,6 +86,8 @@ export default function AccreditationFormCard({ acc }: Props) {
     else alert("Erreur suppression véhicule");
   }
 
+  const [historyVersion, setHistoryVersion] = useState(0);
+
   async function save() {
     setSaving(true);
     try {
@@ -115,6 +117,7 @@ export default function AccreditationFormCard({ acc }: Props) {
       });
       if (!res.ok) throw new Error("Erreur");
       router.refresh();
+      setHistoryVersion((v) => v + 1);
     } catch {
       alert("Erreur d'enregistrement");
     } finally {
@@ -135,6 +138,7 @@ export default function AccreditationFormCard({ acc }: Props) {
       await refreshEmailHistory();
       router.refresh();
       alert("E-mail envoyé");
+      setHistoryVersion((v) => v + 1);
     } catch {
       alert("Impossible d'envoyer l'e-mail");
     } finally {
@@ -161,6 +165,7 @@ export default function AccreditationFormCard({ acc }: Props) {
         unloading: "lat",
       });
       router.refresh();
+      setHistoryVersion((v) => v + 1);
     } else {
       alert("Erreur ajout véhicule");
     }
@@ -599,7 +604,7 @@ export default function AccreditationFormCard({ acc }: Props) {
 
         {/* Historique des modifications */}
         <div className="px-6 pb-6">
-          <AccreditationHistory accreditationId={acc.id} />
+          <AccreditationHistory accreditationId={acc.id} key={historyVersion} />
         </div>
         {/* Modal de confirmation entrée */}
         {showEntryConfirm && (

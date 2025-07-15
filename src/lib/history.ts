@@ -13,8 +13,13 @@ interface HistoryEntryData {
 
 export async function addHistoryEntry(data: HistoryEntryData) {
   try {
+    // Détecte si on est côté serveur (Node) ou client (browser)
+    const isServer = typeof window === "undefined";
+    const base = isServer
+      ? process.env.INTERNAL_BASE_URL || "http://localhost:3000"
+      : "";
     const response = await fetch(
-      `/api/accreditations/${data.accreditationId}/history`,
+      `${base}/api/accreditations/${data.accreditationId}/history`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

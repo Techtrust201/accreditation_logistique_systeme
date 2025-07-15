@@ -87,7 +87,6 @@ export default function StepFour({ data, onReset }: Props) {
       a.download = "accreditation.pdf";
       a.click();
       URL.revokeObjectURL(url);
-      onReset();
     } catch (err) {
       console.error(err);
       alert("Impossible de télécharger le PDF");

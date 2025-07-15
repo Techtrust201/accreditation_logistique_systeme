@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 // import type { Accreditation } from "@/types";
+import { addHistoryEntry, createCreatedEntry } from "@/lib/history";
 
 export async function GET() {
   const list = await prisma.accreditation.findMany({
@@ -62,6 +63,8 @@ export async function POST(req: NextRequest) {
       },
       include: { vehicles: true },
     });
+    // Ajout historique création
+    await addHistoryEntry(createCreatedEntry(created.id, "system"));
     return Response.json(created, { status: 201 });
   } catch (err) {
     console.error(err);

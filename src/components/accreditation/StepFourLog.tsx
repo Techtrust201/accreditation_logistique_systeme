@@ -10,11 +10,6 @@ import {
   Send,
 } from "lucide-react";
 import type { Vehicle } from "@/types";
-import {
-  createCreatedEntry,
-  createEmailSentEntry,
-  addHistoryEntry,
-} from "@/lib/history";
 
 interface Props {
   data: {
@@ -55,8 +50,6 @@ export default function StepFourLog({ data, onReset }: Props) {
         }),
       });
       if (!saveRes.ok) throw new Error("Erreur enregistrement");
-      const created = await saveRes.json();
-      await addHistoryEntry(createCreatedEntry(created.id, "logisticien"));
       setHasSaved(true);
       setSuccess(true);
       setInfoMsg(
@@ -103,7 +96,6 @@ export default function StepFourLog({ data, onReset }: Props) {
       a.download = "accreditation.pdf";
       a.click();
       URL.revokeObjectURL(url);
-      onReset();
     } catch (err) {
       console.error(err);
       alert("Impossible de télécharger le PDF");
@@ -129,13 +121,11 @@ export default function StepFourLog({ data, onReset }: Props) {
       });
       if (!saveRes.ok) throw new Error("Erreur enregistrement");
       const created = await saveRes.json();
-      await addHistoryEntry(createCreatedEntry(created.id, "public"));
       await fetch(`/api/accreditations/${created.id}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      await addHistoryEntry(createEmailSentEntry(created.id, email, "public"));
       setInfoMsg("E-mail envoyé au destinataire. PDF généré.");
       setShowSendModal(false);
     } catch (err) {
