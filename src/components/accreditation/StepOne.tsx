@@ -43,12 +43,12 @@ const EVENTS = [
     logo: "/accreditation/pict_page1/mipcom.jpg",
   },
   {
-    key: "plages",
+    key: "plages électro",
     label: "Plages Électroniques",
     logo: "/accreditation/pict_page1/plages-electro.png",
   },
   {
-    key: "palais",
+    key: "palais des festivals",
     label: "Palais des Festivals",
     logo: "/accreditation/pict_page1/palais-des-festivals.png",
   },
@@ -204,8 +204,8 @@ export default function StepOne({ data, update, onValidityChange }: Props) {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="w-6 h-6 -left-3 hidden sm:flex" />
-                <CarouselNext className="w-6 h-6 -right-3 hidden sm:flex" />
+                <CarouselPrevious className="w-6 h-6 -left-0" />
+                <CarouselNext className="w-6 h-6 -right-0" />
               </Carousel>
               {/* Dots navigation */}
               <div className="flex justify-center gap-1 mt-2">

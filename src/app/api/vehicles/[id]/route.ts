@@ -1,13 +1,19 @@
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     const data = await req.json();
     const updated = await prisma.vehicle.update({
       where: { id: Number(params.id) },
-      data,
+      data: {
+        ...data,
+        unloading: JSON.stringify(data.unloading),
+      },
     });
     return Response.json(updated);
   } catch {
@@ -15,7 +21,10 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   }
 }
 
-export async function DELETE(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     await prisma.vehicle.delete({

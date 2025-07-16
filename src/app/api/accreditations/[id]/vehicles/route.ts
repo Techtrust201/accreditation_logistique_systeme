@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   try {
     const data = await req.json();
@@ -9,6 +12,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     const created = await prisma.vehicle.create({
       data: {
         ...data,
+        unloading: JSON.stringify(data.unloading),
         accreditationId: params.id,
       },
     });

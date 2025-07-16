@@ -40,7 +40,9 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
     (data.size ?? "").trim() &&
     (data.phoneNumber ?? "").trim() &&
     (data.date ?? "").trim() &&
-    (data.city ?? "").trim();
+    (data.city ?? "").trim() &&
+    Array.isArray(data.unloading) &&
+    data.unloading.length > 0;
 
   // onValidityChange est stable du point de vue logique ;
   // l'omettre des dépendances évite que le hook se déclenche à chaque nouveau render
@@ -221,11 +223,56 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
         <div className="flex gap-6 items-center">
           <label className="inline-flex items-center gap-2 cursor-pointer">
             <input
-              type="radio"
-              name={`unload-${uid}`}
+              type="checkbox"
+              name={`unload-arr-${uid}`}
+              value="arr"
+              checked={data.unloading.includes("arr")}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  update({
+                    unloading: Array.from(
+                      new Set([...(data.unloading || []), "arr"])
+                    ),
+                  });
+                } else {
+                  update({
+                    unloading: (data.unloading || []).filter(
+                      (u) => u !== "arr"
+                    ),
+                  });
+                }
+              }}
+            />
+            <Image
+              src="/accreditation/pict_page2/Vector (5).svg"
+              width={24}
+              height={24}
+              className="w-7 h-6"
+              alt="Arrière"
+            />{" "}
+            Arrière
+          </label>
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name={`unload-lat-${uid}`}
               value="lat"
-              checked={data.unloading === "lat"}
-              onChange={() => update({ unloading: "lat" })}
+              checked={data.unloading.includes("lat")}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  update({
+                    unloading: Array.from(
+                      new Set([...(data.unloading || []), "lat"])
+                    ),
+                  });
+                } else {
+                  update({
+                    unloading: (data.unloading || []).filter(
+                      (u) => u !== "lat"
+                    ),
+                  });
+                }
+              }}
             />
             <Image
               src="/accreditation/pict_page2/Vector (4).svg"
@@ -235,23 +282,6 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
               alt="Latéral"
             />{" "}
             Latéral
-          </label>
-          <label className="inline-flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name={`unload-${uid}`}
-              value="rear"
-              checked={data.unloading === "rear"}
-              onChange={() => update({ unloading: "rear" })}
-            />
-            <Image
-              src="/accreditation/pict_page2/Vector (5).svg"
-              width={24}
-              height={24}
-              className="w-6 h-6"
-              alt="Arrière"
-            />{" "}
-            Arrière
           </label>
         </div>
       </div>

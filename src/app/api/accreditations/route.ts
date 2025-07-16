@@ -7,7 +7,21 @@ export async function GET() {
   const list = await prisma.accreditation.findMany({
     include: { vehicles: true },
   });
-  return Response.json(list);
+  // Désérialisation unloading (toujours tableau)
+  const safeList = list.map((acc) => ({
+    ...acc,
+    vehicles: acc.vehicles.map((v) => ({
+      ...v,
+      unloading: Array.isArray(v.unloading)
+        ? v.unloading
+        : typeof v.unloading === "string" && v.unloading.startsWith("[")
+          ? JSON.parse(v.unloading)
+          : v.unloading
+            ? [v.unloading]
+            : [],
+    })),
+  }));
+  return Response.json(safeList);
 }
 
 export async function POST(req: NextRequest) {
@@ -56,7 +70,7 @@ export async function POST(req: NextRequest) {
             date: v.date,
             time: v.time,
             city: v.city,
-            unloading: v.unloading,
+            unloading: JSON.stringify(v.unloading),
             kms: v.kms ?? "",
           })),
         },
@@ -65,7 +79,21 @@ export async function POST(req: NextRequest) {
     });
     // Ajout historique création
     await addHistoryEntry(createCreatedEntry(created.id, "system"));
-    return Response.json(created, { status: 201 });
+    // Désérialisation unloading pour la réponse
+    const safeCreated = {
+      ...created,
+      vehicles: created.vehicles.map((v) => ({
+        ...v,
+        unloading: Array.isArray(v.unloading)
+          ? v.unloading
+          : typeof v.unloading === "string" && v.unloading.startsWith("[")
+            ? JSON.parse(v.unloading)
+            : v.unloading
+              ? [v.unloading]
+              : [],
+      })),
+    };
+    return Response.json(safeCreated, { status: 201 });
   } catch (err) {
     console.error(err);
     return new Response("Invalid payload", { status: 400 });

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import VehicleForm from "./VehicleForm";
 import type { Vehicle } from "@/types";
 
@@ -10,6 +10,17 @@ interface Props {
 }
 
 export default function StepTwo({ data, update, onValidityChange }: Props) {
+  // Initialisation par défaut : si unloading est vide, on force ['arr'] (une seule fois)
+  const didInit = useRef(false);
+  useEffect(() => {
+    if (
+      !didInit.current &&
+      (!Array.isArray(data.unloading) || data.unloading.length === 0)
+    ) {
+      update({ ...data, unloading: ["arr"] });
+      didInit.current = true;
+    }
+  }, [data.unloading, update]);
   useEffect(() => {
     const valid =
       !!data.plate &&
@@ -17,7 +28,8 @@ export default function StepTwo({ data, update, onValidityChange }: Props) {
       !!data.phoneNumber &&
       !!data.date &&
       !!data.city &&
-      !!data.unloading;
+      Array.isArray(data.unloading) &&
+      data.unloading.length > 0;
     onValidityChange(valid);
   }, [data, onValidityChange]);
 

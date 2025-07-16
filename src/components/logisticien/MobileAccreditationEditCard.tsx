@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 
 // Types plus précis
 type VehicleSize = "-10" | "10-14" | "15-20" | "+20";
-type UnloadingType = "lat" | "rear";
+type UnloadingType = "lat" | "arr";
 
 // Schéma de validation Zod avec types stricts
 const vehicleSchema = z.object({
@@ -36,7 +36,7 @@ const vehicleSchema = z.object({
   date: z.string().min(1, "Date requise"),
   time: z.string().min(1, "Heure requise"),
   city: z.string().min(1, "Ville requise"),
-  unloading: z.enum(["lat", "rear"] as const),
+  unloading: z.enum(["lat", "arr"] as const),
   kms: z.string().optional(),
 });
 
@@ -264,7 +264,7 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
                     vehicle.size &&
                     ["-10", "10-14", "15-20", "+20"].includes(vehicle.size) &&
                     vehicle.unloading &&
-                    ["lat", "rear"].includes(vehicle.unloading)
+                    ["lat", "arr"].includes(vehicle.unloading)
                 )
                 .map((vehicle) => ({
                   ...vehicle,
@@ -674,7 +674,7 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
                           }
                         >
                           <option value="lat">Latéral</option>
-                          <option value="rear">Arrière</option>
+                          <option value="arr">Arrière</option>
                         </select>
                       )}
                     />

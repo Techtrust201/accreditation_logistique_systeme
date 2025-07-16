@@ -59,7 +59,7 @@ model Vehicle {
   date            String
   time            String
   city            String
-  unloading       String
+  unloading       String   @db.Text
   kms             String?
 
   accreditation   Accreditation @relation(fields: [accreditationId], references: [id], onDelete: Cascade)

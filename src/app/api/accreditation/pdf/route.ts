@@ -156,7 +156,23 @@ export async function POST(req: NextRequest) {
     addLabelVal("Nom de l'entreprise", company);
     addLabelVal("Stand desservi", stand);
     addLabelVal("Événement", event);
-    addLabelVal("Déchargement par", unloading.toUpperCase());
+    // Désérialisation du champ unloading (accréditation)
+    let unloadingLabel = "";
+    let unloadingArr: string[] = [];
+    if (Array.isArray(unloading)) {
+      unloadingArr = unloading;
+    } else if (typeof unloading === "string" && unloading.startsWith("[")) {
+      try {
+        unloadingArr = JSON.parse(unloading);
+      } catch {
+        unloadingArr = [unloading];
+      }
+    } else if (typeof unloading === "string") {
+      unloadingArr = unloading ? [unloading] : [];
+    }
+    const map: Record<string, string> = { lat: "Latéral", arr: "Arrière" };
+    unloadingLabel = unloadingArr.map((u) => map[u] || u).join(", ");
+    addLabelVal("Déchargement par", unloadingLabel);
 
     // Statut
     drawText(page, "Statut Actuel :", LABEL_X, y, 12, {
@@ -244,9 +260,25 @@ export async function POST(req: NextRequest) {
       addLabelValBox("Date d'arrivée prévue", v.date);
       addLabelValBox("Heure d'arrivée prévue", v.time || "--:--");
       addLabelValBox("Ville de départ", v.city);
+      // Désérialisation unloading véhicule
+      let vUnloadingArr: string[] = [];
+      if (Array.isArray(v.unloading)) {
+        vUnloadingArr = v.unloading;
+      } else if (
+        typeof v.unloading === "string" &&
+        v.unloading.startsWith("[")
+      ) {
+        try {
+          vUnloadingArr = JSON.parse(v.unloading);
+        } catch {
+          vUnloadingArr = [v.unloading];
+        }
+      } else if (typeof v.unloading === "string") {
+        vUnloadingArr = v.unloading ? [v.unloading] : [];
+      }
       addLabelValBox(
         "Type de déchargement",
-        v.unloading === "lat" ? "Latéral" : "Arrière"
+        vUnloadingArr.map((u) => map[u] || u).join(", ")
       );
       if (v.kms) {
         addLabelValBox("Km parcourus", v.kms);

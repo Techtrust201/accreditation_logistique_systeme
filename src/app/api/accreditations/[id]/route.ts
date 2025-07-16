@@ -19,7 +19,21 @@ export async function GET(
     include: { vehicles: true },
   });
   if (!acc) return new Response("Not found", { status: 404 });
-  return Response.json(acc);
+  // Désérialisation unloading (toujours tableau)
+  const safeAcc = {
+    ...acc,
+    vehicles: acc.vehicles.map((v) => ({
+      ...v,
+      unloading: Array.isArray(v.unloading)
+        ? v.unloading
+        : typeof v.unloading === "string" && v.unloading.startsWith("[")
+          ? JSON.parse(v.unloading)
+          : v.unloading
+            ? [v.unloading]
+            : [],
+    })),
+  };
+  return Response.json(safeAcc);
 }
 
 /* ---------------------- PATCH ---------------------- */
@@ -157,6 +171,7 @@ export async function PATCH(
           const { id, ...vehicleData } = vehicle;
           return {
             ...vehicleData,
+            unloading: JSON.stringify(vehicle.unloading),
             accreditationId,
           };
         }),
@@ -169,8 +184,22 @@ export async function PATCH(
     where: { id: accreditationId },
     include: { vehicles: true },
   });
-
-  return Response.json(accWithVehicles);
+  // Désérialisation unloading (toujours tableau)
+  const safeAccWithVehicles = {
+    ...accWithVehicles,
+    vehicles:
+      accWithVehicles?.vehicles.map((v) => ({
+        ...v,
+        unloading: Array.isArray(v.unloading)
+          ? v.unloading
+          : typeof v.unloading === "string" && v.unloading.startsWith("[")
+            ? JSON.parse(v.unloading)
+            : v.unloading
+              ? [v.unloading]
+              : [],
+      })) ?? [],
+  };
+  return Response.json(safeAccWithVehicles);
 }
 
 /* --------------------- DELETE ---------------------- */
