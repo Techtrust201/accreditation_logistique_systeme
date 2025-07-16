@@ -1,11 +1,24 @@
 import { readAccreditations } from "@/lib/store";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { FilterBar } from "@/components/logisticien/FilterBar";
 import AccreditationTable from "@/components/logisticien/AccreditationTable";
 import { buildLink } from "@/lib/url";
 import AccreditationFormCard from "@/components/logisticien/AccreditationFormCard";
 import type { SortDirection } from "@/components/ui/table";
+
+// --- Utilitaire de normalisation accent/casse/espaces/ligatures ---
+const slug = (s: unknown) =>
+  String(s ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    // Supprime les diacritiques (accents)
+    .replace(/[\u0300-\u036f]/g, "")
+    // Remplace les ligatures courantes
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    // Unifie les espaces
+    .replace(/\s+/g, " ")
+    .trim();
 
 /* ---------- Page Dashboard ---------- */
 export default async function LogisticienDashboard(props: {
@@ -29,6 +42,22 @@ export default async function LogisticienDashboard(props: {
 
   // --- Filtering ---
   let filtered = data;
+  if (q && q.trim()) {
+    const needle = slug(q);
+    filtered = filtered.filter((acc) =>
+      [
+        acc.id,
+        acc.vehicles?.[0]?.plate,
+        acc.status,
+        acc.company,
+        acc.stand,
+        acc.event,
+        acc.createdAt && new Date(acc.createdAt).toLocaleDateString("fr-FR"),
+      ]
+        .map(slug)
+        .some((hay) => hay.includes(needle))
+    );
+  }
 
   if (status && status !== "all") {
     filtered = filtered.filter((acc) => (acc.status as string) === status);
@@ -52,24 +81,6 @@ export default async function LogisticienDashboard(props: {
       if (!acc.createdAt) return false;
       const d = new Date(acc.createdAt);
       return d >= start && d <= end;
-    });
-  }
-
-  if (q.trim()) {
-    const query = q.trim().toLowerCase();
-    filtered = filtered.filter((acc) => {
-      const idMatch = String(acc.id).includes(query);
-      const plateMatch = acc.vehicles?.[0]?.plate
-        ?.toLowerCase()
-        .includes(query);
-      const statusMatch = (acc.status as string).toLowerCase().includes(query);
-      const dateMatch = acc.createdAt
-        ? new Date(acc.createdAt)
-            .toLocaleDateString("fr-FR")
-            .toLowerCase()
-            .includes(query)
-        : false;
-      return idMatch || plateMatch || statusMatch || dateMatch;
     });
   }
 
@@ -181,12 +192,12 @@ export default async function LogisticienDashboard(props: {
       <div className="flex-shrink-0 p-2">
         <div className="flex justify-between items-center">
           <FilterBar searchParams={paramsObj} statusOptions={statusOptions} />
-          <Link
+          {/* <Link
             href="/logisticien/nouveau?step=1"
             className="px-4 py-2 bg-[#4F587E] text-white rounded-lg text-sm hover:bg-[#3B4252] transition-colors duration-200 font-medium"
           >
             Nouvelle demande
-          </Link>
+          </Link> */}
         </div>
       </div>
 

@@ -1,8 +1,17 @@
 "use client";
 import { useEffect } from "react";
+import React from "react";
+import type { CarouselApi } from "@/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
-
-type EventKey = "festival" | "miptv" | "mipcom";
 
 interface Data {
   company: string;
@@ -17,31 +26,62 @@ interface Props {
   onValidityChange: (v: boolean) => void;
 }
 
-const EVENTS: Record<EventKey, { label: string; logo: string }> = {
-  festival: {
+const EVENTS = [
+  {
+    key: "festival",
     label: "Festival du Film",
     logo: "/accreditation/pict_page1/festival.png",
   },
-  miptv: {
+  {
+    key: "miptv",
     label: "MIPTV",
     logo: "/accreditation/pict_page1/miptv.jpg",
   },
-  mipcom: {
+  {
+    key: "mipcom",
     label: "MIPCOM",
     logo: "/accreditation/pict_page1/mipcom.jpg",
   },
-};
+  {
+    key: "plages",
+    label: "Plages Électroniques",
+    logo: "/accreditation/pict_page1/plages-electro.png",
+  },
+  {
+    key: "palais",
+    label: "Palais des Festivals",
+    logo: "/accreditation/pict_page1/palais-des-festivals.png",
+  },
+];
 
 export default function StepOne({ data, update, onValidityChange }: Props) {
   const { company, stand, unloading, event } = data;
 
-  const missingCompany = !company.trim();
-  const missingStand = !stand.trim();
-  const missingUnload = !unloading;
-
   const isValid = !!(company && stand && unloading && event);
 
   useEffect(() => onValidityChange(isValid), [isValid, onValidityChange]);
+
+  // Carousel state
+  const [carouselApi, setCarouselApi] = React.useState<CarouselApi | null>(
+    null
+  );
+  const [currentIdx, setCurrentIdx] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!carouselApi) return;
+    const updateIdx = () => setCurrentIdx(carouselApi.selectedScrollSnap());
+    carouselApi.on("select", updateIdx);
+    updateIdx();
+    return () => {
+      carouselApi.off("select", updateIdx);
+    };
+  }, [carouselApi]);
+
+  React.useEffect(() => {
+    // Quand on change de slide, on update le champ event
+    update({ event: EVENTS[currentIdx].key });
+    // eslint-disable-next-line
+  }, [currentIdx]);
 
   return (
     <div className="flex flex-col w-full ">
@@ -63,9 +103,10 @@ export default function StepOne({ data, update, onValidityChange }: Props) {
                 value={company}
                 onChange={(e) => update({ company: e.target.value })}
                 placeholder="Nom de l'entreprise"
-                className={`w-full rounded-md px-3 py-2 shadow-sm focus:ring-primary focus:border-primary ${
-                  missingCompany ? "border-red-500" : "border-gray-300"
-                }`}
+                className={cn(
+                  "w-full rounded-md px-3 py-2 shadow-sm focus:ring-primary focus:border-primary",
+                  !company.trim() ? "border-red-500" : "border-gray-300"
+                )}
               />
             </div>
             {/* Stand */}
@@ -81,9 +122,10 @@ export default function StepOne({ data, update, onValidityChange }: Props) {
                 value={stand}
                 onChange={(e) => update({ stand: e.target.value })}
                 placeholder="Nom du stand"
-                className={`w-full rounded-md px-3 py-2 shadow-sm focus:ring-primary focus:border-primary ${
-                  missingStand ? "border-red-500" : "border-gray-300"
-                }`}
+                className={cn(
+                  "w-full rounded-md px-3 py-2 shadow-sm focus:ring-primary focus:border-primary",
+                  !stand.trim() ? "border-red-500" : "border-gray-300"
+                )}
               />
             </div>
             {/* Déchargement */}
@@ -98,9 +140,10 @@ export default function StepOne({ data, update, onValidityChange }: Props) {
                 id="unloading"
                 value={unloading}
                 onChange={(e) => update({ unloading: e.target.value })}
-                className={`w-full rounded-md px-3 py-2 shadow-sm bg-white focus:ring-primary focus:border-primary ${
-                  missingUnload ? "border-red-500" : "border-gray-300"
-                }`}
+                className={cn(
+                  "w-full rounded-md px-3 py-2 shadow-sm bg-white focus:ring-primary focus:border-primary",
+                  !unloading ? "border-red-500" : "border-gray-300"
+                )}
               >
                 <option value="" disabled>
                   Choisir un prestataire
@@ -112,44 +155,86 @@ export default function StepOne({ data, update, onValidityChange }: Props) {
             </div>
           </div>
 
-          {/* Events */}
-          <p className="text-sm font-medium mb-2">
-            Sélectionnez un évènement :
-          </p>
-          <div className="flex gap-4 flex-wrap mb-8">
-            {Object.entries(EVENTS).map(([key, { label, logo }]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => update({ event: key as string })}
-                className={`cursor-pointer border rounded-lg p-3 flex flex-col items-center gap-1 w-28 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
-                  event === key
-                    ? "border-primary bg-gray-50"
-                    : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
-                }`}
-              >
-                <div className="bg-white shadow-md rounded flex items-center justify-center p-2 mb-1 w-full h-16">
-                  <Image
-                    src={logo}
-                    alt={label}
-                    width={48}
-                    height={32}
-                    className="object-contain w-12 h-8"
+          {/* Carrousel d'événements */}
+          <div className="flex flex-col items-center justify-center w-full">
+            <p className="text-sm font-medium mb-2 text-center">
+              Sélectionnez un évènement :
+            </p>
+            <div className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto">
+              <Carousel setApi={setCarouselApi} opts={{ loop: true }}>
+                <CarouselContent>
+                  {EVENTS.map((ev, idx) => (
+                    <CarouselItem
+                      key={ev.key}
+                      className="pl-0.5 md:basis-1/2 lg:basis-1/2 flex justify-center p-1"
+                    >
+                      <Card
+                        className={cn(
+                          "transition-all duration-300 shadow border flex flex-col items-center justify-center cursor-pointer h-24 md:h-32 w-20 md:w-28 bg-white rounded-lg p-1",
+                          currentIdx === idx
+                            ? "scale-100 border-primary ring-2 ring-primary/30 z-10"
+                            : "scale-95 border-gray-200 opacity-80"
+                        )}
+                        onClick={() => {
+                          setCurrentIdx(idx);
+                          carouselApi?.scrollTo(idx);
+                        }}
+                      >
+                        <CardContent className="flex flex-col items-center justify-center h-full p-1 w-full">
+                          <Image
+                            src={ev.logo}
+                            alt={ev.label}
+                            width={48}
+                            height={36}
+                            className="object-contain w-12 h-9 md:w-16 md:h-12 mb-1 rounded drop-shadow"
+                            priority={idx === 0}
+                          />
+                          <span
+                            className={cn(
+                              "truncate w-full text-xs md:text-sm font-medium text-center overflow-hidden",
+                              currentIdx === idx
+                                ? "text-primary"
+                                : "text-gray-700"
+                            )}
+                          >
+                            {ev.label}
+                          </span>
+                        </CardContent>
+                      </Card>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="w-6 h-6 -left-3 hidden sm:flex" />
+                <CarouselNext className="w-6 h-6 -right-3 hidden sm:flex" />
+              </Carousel>
+              {/* Dots navigation */}
+              <div className="flex justify-center gap-1 mt-2">
+                {EVENTS.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setCurrentIdx(idx);
+                      carouselApi?.scrollTo(idx);
+                    }}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all",
+                      currentIdx === idx
+                        ? "bg-primary scale-110"
+                        : "bg-gray-300 hover:bg-gray-400"
+                    )}
+                    aria-label={`Aller à l'événement ${EVENTS[idx].label}`}
                   />
-                </div>
-                <span className="text-xs text-center leading-tight">
-                  {label}
-                </span>
-              </button>
-            ))}
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        {!isValid && (
-          <p className="text-red-500 text-sm mt-2">
-            Complétez tous les champs obligatoires pour continuer.
-          </p>
-        )}
       </div>
+      {!isValid && (
+        <p className="text-red-500 text-sm mt-2 text-center">
+          Complétez tous les champs obligatoires pour continuer.
+        </p>
+      )}
     </div>
   );
 }

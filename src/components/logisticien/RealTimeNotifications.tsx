@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Bell, X } from "lucide-react";
 
 interface Notification {
@@ -20,6 +20,24 @@ export default function RealTimeNotifications({
 }: RealTimeNotificationsProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+
+  const addNotification = useCallback(
+    (notification: Omit<Notification, "id" | "timestamp">) => {
+      const newNotification: Notification = {
+        ...notification,
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: new Date(),
+      };
+
+      setNotifications((prev) => [newNotification, ...prev.slice(0, 4)]); // Garder max 5 notifications
+
+      // Auto-suppression après 10 secondes
+      setTimeout(() => {
+        removeNotification(newNotification.id);
+      }, 10000);
+    },
+    []
+  );
 
   useEffect(() => {
     // Simulation de connexion WebSocket pour les notifications en temps réel
@@ -42,24 +60,7 @@ export default function RealTimeNotifications({
     return () => {
       setIsConnected(false);
     };
-  }, []);
-
-  const addNotification = (
-    notification: Omit<Notification, "id" | "timestamp">
-  ) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-    };
-
-    setNotifications((prev) => [newNotification, ...prev.slice(0, 4)]); // Garder max 5 notifications
-
-    // Auto-suppression après 10 secondes
-    setTimeout(() => {
-      removeNotification(newNotification.id);
-    }, 10000);
-  };
+  }, [addNotification]);
 
   const removeNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));

@@ -158,14 +158,7 @@ export function FilterBar({
         >
           Réinitialiser
         </Link>
-        {showNewButton && (
-          <Link
-            href="/logisticien/nouveau?step=1"
-            className="ml-4 px-4 py-2 bg-primary text-white rounded text-sm hover:bg-primary-dark hidden md:inline-block"
-          >
-            Nouvelle demande
-          </Link>
-        )}
+        {showNewButton && <Link href="/logisticien/nouveau?step=1"></Link>}
       </form>
     </>
   );
