@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         event,
         message: message ?? "",
         consent: consent ?? true,
-        status: "ATTENTE",
+        status: raw.status ?? "ATTENTE",
         vehicles: {
           create: vehicles.map((v) => ({
             plate: v.plate,

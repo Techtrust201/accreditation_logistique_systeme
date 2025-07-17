@@ -480,6 +480,10 @@ export default function AccreditationFormCard({ acc }: Props) {
               onChange={(e) => setEvent(e.target.value)}
             >
               <option value="">Choisir un événement</option>
+              {/* Affiche l'option associée même si elle n'est pas dans EVENT_OPTIONS */}
+              {event && !EVENT_OPTIONS.some((o) => o.value === event) && (
+                <option value={event}>{event}</option>
+              )}
               {EVENT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId } from "react";
+import { useEffect } from "react";
 import type { Vehicle } from "@/types";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import Image from "next/image";
@@ -35,7 +35,7 @@ const SIZE_OPTIONS = [
 ];
 
 export default function VehicleForm({ data, update, onValidityChange }: Props) {
-  const uid = useId();
+  // const uid = useId();
   const valid =
     (data.plate ?? "").trim() &&
     (data.size ?? "").trim() &&

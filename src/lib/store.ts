@@ -30,7 +30,13 @@ export async function readAccreditations(): Promise<Accreditation[]> {
           date: v.date,
           time: v.time,
           city: v.city,
-          unloading: v.unloading as Vehicle["unloading"],
+          unloading: Array.isArray(v.unloading)
+            ? v.unloading
+            : typeof v.unloading === "string" && v.unloading.startsWith("[")
+              ? JSON.parse(v.unloading)
+              : v.unloading
+                ? [v.unloading]
+                : [],
           kms: v.kms || undefined,
         })
       ),
