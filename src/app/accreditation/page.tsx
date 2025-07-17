@@ -43,7 +43,7 @@ function AccreditationPageContent() {
       date: "",
       time: "",
       city: "",
-      unloading: "",
+      unloading: [],
     };
   }
 
