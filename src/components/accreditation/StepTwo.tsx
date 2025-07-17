@@ -10,14 +10,14 @@ interface Props {
 }
 
 export default function StepTwo({ data, update, onValidityChange }: Props) {
-  // Initialisation par défaut : si unloading est vide, on force ['arr'] (une seule fois)
+  // Initialisation par défaut : si unloading est vide, on force ['rear'] (une seule fois)
   const didInit = useRef(false);
   useEffect(() => {
     if (
       !didInit.current &&
       (!Array.isArray(data.unloading) || data.unloading.length === 0)
     ) {
-      update({ ...data, unloading: ["arr"] });
+      update({ ...data, unloading: ["rear"] });
       didInit.current = true;
     }
   }, [data.unloading, update]);

@@ -1,44 +1,33 @@
 "use client";
 
 import { useState, useTransition, useCallback, useMemo } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Accreditation, AccreditationStatus } from "@/types";
 import {
   ArrowLeft,
   Save,
-  Trash2,
   PlusCircle,
   AlertCircle,
   CheckCircle,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Types plus précis
-type VehicleSize = "-10" | "10-14" | "15-20" | "+20";
-type UnloadingType = "lat" | "arr";
-
-// Schéma de validation Zod avec types stricts
-const vehicleSchema = z.object({
-  id: z.number().optional(),
-  plate: z.string().min(1, "Plaque requise").max(20, "Plaque trop longue"),
-  size: z.enum(["-10", "10-14", "15-20", "+20"] as const),
-  phoneCode: z
-    .string()
-    .min(1, "Indicatif requis")
-    .regex(/^\+[0-9]+$/, "Format invalide"),
-  phoneNumber: z
-    .string()
-    .min(1, "Numéro requis")
-    .regex(/^[0-9]+$/, "Chiffres uniquement"),
-  date: z.string().min(1, "Date requise"),
-  time: z.string().min(1, "Heure requise"),
-  city: z.string().min(1, "Ville requise"),
-  unloading: z.enum(["lat", "arr"] as const),
-  kms: z.string().optional(),
-});
+// Type pour le formulaire d'édition de véhicule
+interface VehicleFormData {
+  plate: string;
+  size: string;
+  phoneCode: string;
+  phoneNumber: string;
+  date: string;
+  time: string;
+  city: string;
+  unloading: string[];
+}
 
 const accreditationFormSchema = z.object({
   status: z.enum([
@@ -54,30 +43,9 @@ const accreditationFormSchema = z.object({
   unloading: z.string().min(1, "Déchargement requis").max(50, "Trop long"),
   event: z.string().min(1, "Événement requis").max(50, "Trop long"),
   message: z.string().max(500, "Message trop long").optional(),
-  vehicles: z
-    .array(vehicleSchema)
-    .min(1, "Au moins un véhicule requis")
-    .max(5, "Maximum 5 véhicules"),
 });
 
 type AccreditationFormData = z.infer<typeof accreditationFormSchema>;
-
-// Constantes mémorisées
-const STATUS_OPTIONS = [
-  { value: "NOUVEAU" as const, label: "Nouveau" },
-  { value: "ATTENTE" as const, label: "Attente" },
-  { value: "ENTREE" as const, label: "Entrée" },
-  { value: "SORTIE" as const, label: "Sortie" },
-  { value: "REFUS" as const, label: "Refus" },
-  { value: "ABSENT" as const, label: "Absent" },
-] as const;
-
-const VEHICLE_SIZE_OPTIONS = [
-  { value: "-10" as const, label: "-10" },
-  { value: "10-14" as const, label: "10-14" },
-  { value: "15-20" as const, label: "15-20" },
-  { value: "+20" as const, label: "+20" },
-] as const;
 
 // Types pour les toasts
 type ToastType = "success" | "error" | "info";
@@ -112,22 +80,6 @@ function useToasts() {
 function useStatusLogic() {
   const [showEntryConfirm, setShowEntryConfirm] = useState(false);
 
-  const canChangeStatus = useCallback(
-    (
-      currentStatus: AccreditationStatus,
-      newStatus: AccreditationStatus
-    ): boolean => {
-      if (currentStatus === "ENTREE") {
-        return newStatus === "SORTIE";
-      }
-      if (currentStatus === "SORTIE") {
-        return false;
-      }
-      return true;
-    },
-    []
-  );
-
   const handleStatusChange = useCallback(
     (
       currentStatus: AccreditationStatus,
@@ -139,20 +91,41 @@ function useStatusLogic() {
         return;
       }
 
-      if (canChangeStatus(currentStatus, newStatus)) {
+      // Permettre tous les changements de statut sauf depuis SORTIE
+      if (currentStatus !== "SORTIE") {
         onStatusChange(newStatus);
       }
     },
-    [canChangeStatus]
+    []
   );
 
   return {
     showEntryConfirm,
     setShowEntryConfirm,
-    canChangeStatus,
     handleStatusChange,
   };
 }
+
+// Ajout de la fonction pour les transitions métier mobile
+const getNextStatusOptions = (current: AccreditationStatus) => {
+  // Toujours inclure le statut actuel pour permettre de le voir
+  const allOptions = [
+    { value: "NOUVEAU", label: "Nouveau" },
+    { value: "ATTENTE", label: "Attente" },
+    { value: "ENTREE", label: "Entrée" },
+    { value: "SORTIE", label: "Sortie" },
+    { value: "REFUS", label: "Refusé" },
+    { value: "ABSENT", label: "Absent" },
+  ];
+
+  // Si le statut est SORTIE, on ne peut plus changer
+  if (current === "SORTIE") {
+    return allOptions.filter((option) => option.value === current);
+  }
+
+  // Pour tous les autres statuts, permettre tous les changements
+  return allOptions;
+};
 
 // Composant Toast
 function Toast({
@@ -237,6 +210,9 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
   const { showEntryConfirm, setShowEntryConfirm, handleStatusChange } =
     useStatusLogic();
   const { toasts, addToast, removeToast } = useToasts();
+  const [editingVehicle, setEditingVehicle] = useState<number | null>(null);
+  const [vehicleFormData, setVehicleFormData] =
+    useState<VehicleFormData | null>(null);
 
   // Initialisation du formulaire avec react-hook-form
   const {
@@ -244,7 +220,8 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isDirty, isValid },
+    trigger,
+    formState: { errors, isValid },
     reset,
   } = useForm<AccreditationFormData>({
     resolver: zodResolver(accreditationFormSchema),
@@ -256,43 +233,10 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
         unloading: acc.unloading ?? "",
         event: acc.event ?? "",
         message: acc.message ?? "",
-        vehicles:
-          acc.vehicles.length > 0
-            ? acc.vehicles
-                .filter(
-                  (vehicle) =>
-                    vehicle.size &&
-                    ["-10", "10-14", "15-20", "+20"].includes(vehicle.size) &&
-                    vehicle.unloading &&
-                    ["lat", "arr"].includes(vehicle.unloading)
-                )
-                .map((vehicle) => ({
-                  ...vehicle,
-                  size: vehicle.size as VehicleSize,
-                  unloading: vehicle.unloading as UnloadingType,
-                }))
-            : [
-                {
-                  plate: "",
-                  size: "-10" as VehicleSize,
-                  phoneCode: "+33",
-                  phoneNumber: "",
-                  date: "",
-                  time: "",
-                  city: "",
-                  unloading: "lat" as UnloadingType,
-                },
-              ],
       }),
       [acc]
     ),
     mode: "onChange",
-  });
-
-  // Gestion des véhicules avec useFieldArray
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "vehicles",
   });
 
   const currentStatus = watch("status");
@@ -336,17 +280,103 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
 
   // Ajout d'un nouveau véhicule mémorisé
   const handleAddVehicle = useCallback(() => {
-    append({
-      plate: "",
-      size: "-10" as VehicleSize,
-      phoneCode: "+33",
-      phoneNumber: "",
-      date: "",
-      time: "",
-      city: "",
-      unloading: "lat" as UnloadingType,
+    // On prépare tous les champs à dupliquer
+    const params = new URLSearchParams({
+      step: "1",
+      company: acc.company || "",
+      stand: acc.stand || "",
+      unloading: acc.unloading || "",
+      event: acc.event || "",
+      message: acc.message || "",
+      email: acc.email || "",
+      // On prend la ville du premier véhicule s'il existe
+      city: acc.vehicles[0]?.city || "",
     });
-  }, [append]);
+    router.push(`/logisticien/nouveau?${params.toString()}`);
+  }, [acc, router]);
+
+  // Fonction pour éditer un véhicule
+  const handleEditVehicle = useCallback(
+    (vehicleIndex: number) => {
+      const vehicle = acc.vehicles[vehicleIndex];
+      if (!vehicle) return;
+
+      setEditingVehicle(vehicleIndex);
+      setVehicleFormData({
+        plate: vehicle.plate || "",
+        size: vehicle.size || "-10",
+        phoneCode: vehicle.phoneCode || "+33",
+        phoneNumber: vehicle.phoneNumber || "",
+        date: vehicle.date || "",
+        time: vehicle.time || "",
+        city: vehicle.city || "",
+        unloading: Array.isArray(vehicle.unloading)
+          ? vehicle.unloading
+          : vehicle.unloading
+            ? [vehicle.unloading]
+            : ["lat"],
+      });
+    },
+    [acc]
+  );
+
+  // Fonction pour supprimer un véhicule
+  const handleDeleteVehicle = useCallback(
+    async (vehicleId: number) => {
+      if (!confirm("Supprimer ce véhicule ?")) return;
+
+      try {
+        const response = await fetch(`/api/vehicles/${vehicleId}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          addToast("success", "Véhicule supprimé avec succès");
+          router.refresh();
+        } else {
+          addToast("error", "Erreur lors de la suppression");
+        }
+      } catch (error) {
+        addToast("error", "Erreur lors de la suppression");
+        console.error("Erreur suppression véhicule:", error);
+      }
+    },
+    [addToast, router]
+  );
+
+  // Fonction pour sauvegarder l'édition d'un véhicule
+  const handleSaveVehicleEdit = useCallback(async () => {
+    if (editingVehicle === null || !vehicleFormData) return;
+
+    const vehicle = acc.vehicles[editingVehicle];
+    if (!vehicle) return;
+
+    try {
+      const response = await fetch(`/api/vehicles/${vehicle.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(vehicleFormData),
+      });
+
+      if (response.ok) {
+        addToast("success", "Véhicule modifié avec succès");
+        setEditingVehicle(null);
+        setVehicleFormData(null);
+        router.refresh();
+      } else {
+        addToast("error", "Erreur lors de la modification");
+      }
+    } catch (error) {
+      addToast("error", "Erreur lors de la modification");
+      console.error("Erreur modification véhicule:", error);
+    }
+  }, [editingVehicle, vehicleFormData, acc.vehicles, addToast, router]);
+
+  // Fonction pour annuler l'édition
+  const handleCancelVehicleEdit = useCallback(() => {
+    setEditingVehicle(null);
+    setVehicleFormData(null);
+  }, []);
 
   return (
     <>
@@ -387,15 +417,23 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                   onChange={(e) => {
                     const newStatus = e.target.value as AccreditationStatus;
-                    handleStatusChange(currentStatus, newStatus, (status) =>
-                      setValue("status", status)
-                    );
+                    handleStatusChange(currentStatus, newStatus, (status) => {
+                      setValue("status", status, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                      trigger("status");
+                    });
                   }}
                   disabled={currentStatus === "SORTIE"}
                   aria-describedby={errors.status ? "status-error" : undefined}
                 >
-                  {STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
+                  {getNextStatusOptions(currentStatus).map((option) => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                      disabled={option.value === currentStatus}
+                    >
                       {option.label}
                     </option>
                   ))}
@@ -446,251 +484,79 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
                 type="button"
                 onClick={handleAddVehicle}
                 className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#4F587E] text-white text-xs font-semibold shadow hover:bg-[#3B4252] transition"
-                disabled={fields.length >= 5}
                 aria-label="Ajouter un véhicule"
               >
                 <PlusCircle size={16} /> Ajouter
               </button>
             </div>
 
-            {fields.map((field, index) => (
-              <div
-                key={field.id}
-                className="bg-gray-50 rounded-lg border p-3 space-y-2"
-                role="group"
-                aria-labelledby={`vehicle-${index}-title`}
-              >
-                <div className="flex items-center justify-between">
-                  <span
-                    id={`vehicle-${index}-title`}
-                    className="font-semibold text-sm"
+            {/* Liste des véhicules existants */}
+            {acc.vehicles && acc.vehicles.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+                {acc.vehicles.map((vehicle, index) => (
+                  <div
+                    key={vehicle.id}
+                    className="bg-white rounded-lg p-3 border"
                   >
-                    Véhicule {index + 1}
-                  </span>
-                  {fields.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="text-red-500 hover:bg-red-100 rounded-full p-1 transition-colors"
-                      aria-label={`Supprimer le véhicule ${index + 1}`}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <FormField
-                    label="Plaque"
-                    name={`vehicles.${index}.plate`}
-                    error={errors.vehicles?.[index]?.plate?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.plate`}
-                      control={control}
-                      render={({ field }) => (
-                        <input
-                          {...field}
-                          className="w-full px-2 py-1 border rounded text-xs"
-                          placeholder="XX-123-YY"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.plate
-                              ? `vehicles-${index}-plate-error`
-                              : undefined
-                          }
-                        />
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField
-                    label="Taille"
-                    name={`vehicles.${index}.size`}
-                    error={errors.vehicles?.[index]?.size?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.size`}
-                      control={control}
-                      render={({ field }) => (
-                        <select
-                          {...field}
-                          className="w-full px-2 py-1 border rounded text-xs"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.size
-                              ? `vehicles-${index}-size-error`
-                              : undefined
-                          }
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-medium text-sm">
+                        Véhicule {index + 1}:{" "}
+                        {vehicle.plate || "Plaque non définie"}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEditVehicle(index)}
+                          className="text-[#4F587E] hover:bg-gray-100 rounded-lg p-2 transition-colors"
+                          aria-label="Éditer le véhicule"
                         >
-                          <option value="">Choisir</option>
-                          {VEHICLE_SIZE_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField
-                    label="Indicatif"
-                    name={`vehicles.${index}.phoneCode`}
-                    error={errors.vehicles?.[index]?.phoneCode?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.phoneCode`}
-                      control={control}
-                      render={({ field }) => (
-                        <input
-                          {...field}
-                          className="w-full px-2 py-1 border rounded text-xs"
-                          placeholder="+33"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.phoneCode
-                              ? `vehicles-${index}-phoneCode-error`
-                              : undefined
-                          }
-                        />
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField
-                    label="Téléphone"
-                    name={`vehicles.${index}.phoneNumber`}
-                    error={errors.vehicles?.[index]?.phoneNumber?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.phoneNumber`}
-                      control={control}
-                      render={({ field }) => (
-                        <input
-                          {...field}
-                          className="w-full px-2 py-1 border rounded text-xs"
-                          placeholder="0123456789"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.phoneNumber
-                              ? `vehicles-${index}-phoneNumber-error`
-                              : undefined
-                          }
-                        />
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField
-                    label="Date"
-                    name={`vehicles.${index}.date`}
-                    error={errors.vehicles?.[index]?.date?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.date`}
-                      control={control}
-                      render={({ field }) => (
-                        <input
-                          {...field}
-                          type="date"
-                          className="w-full px-2 py-1 border rounded text-xs"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.date
-                              ? `vehicles-${index}-date-error`
-                              : undefined
-                          }
-                        />
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField
-                    label="Heure"
-                    name={`vehicles.${index}.time`}
-                    error={errors.vehicles?.[index]?.time?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.time`}
-                      control={control}
-                      render={({ field }) => (
-                        <input
-                          {...field}
-                          type="time"
-                          className="w-full px-2 py-1 border rounded text-xs"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.time
-                              ? `vehicles-${index}-time-error`
-                              : undefined
-                          }
-                        />
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField
-                    label="Ville"
-                    name={`vehicles.${index}.city`}
-                    error={errors.vehicles?.[index]?.city?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.city`}
-                      control={control}
-                      render={({ field }) => (
-                        <input
-                          {...field}
-                          className="w-full px-2 py-1 border rounded text-xs col-span-2"
-                          placeholder="Paris"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.city
-                              ? `vehicles-${index}-city-error`
-                              : undefined
-                          }
-                        />
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField
-                    label="Déchargement"
-                    name={`vehicles.${index}.unloading`}
-                    error={errors.vehicles?.[index]?.unloading?.message}
-                    required
-                  >
-                    <Controller
-                      name={`vehicles.${index}.unloading`}
-                      control={control}
-                      render={({ field }) => (
-                        <select
-                          {...field}
-                          className="w-full px-2 py-1 border rounded text-xs col-span-2"
-                          aria-describedby={
-                            errors.vehicles?.[index]?.unloading
-                              ? `vehicles-${index}-unloading-error`
-                              : undefined
-                          }
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVehicle(vehicle.id)}
+                          className="text-red-500 hover:bg-red-50 rounded-lg p-2 transition-colors"
+                          aria-label="Supprimer le véhicule"
                         >
-                          <option value="lat">Latéral</option>
-                          <option value="arr">Arrière</option>
-                        </select>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-gray-600 text-xs space-y-1">
+                      {vehicle.size && <div>Taille: {vehicle.size}</div>}
+                      {vehicle.city && <div>Ville: {vehicle.city}</div>}
+                      {vehicle.phoneCode && vehicle.phoneNumber && (
+                        <div>
+                          Téléphone: {vehicle.phoneCode} {vehicle.phoneNumber}
+                        </div>
                       )}
-                    />
-                  </FormField>
-                </div>
+                      {vehicle.date && <div>Date: {vehicle.date}</div>}
+                      {vehicle.time && <div>Heure: {vehicle.time}</div>}
+                      {vehicle.unloading && (
+                        <div>
+                          Déchargement:{" "}
+                          {Array.isArray(vehicle.unloading)
+                            ? vehicle.unloading.includes("lat") &&
+                              vehicle.unloading.includes("rear")
+                              ? "Latéral + Arrière"
+                              : vehicle.unloading.includes("lat")
+                                ? "Latéral"
+                                : vehicle.unloading.includes("rear")
+                                  ? "Arrière"
+                                  : "Non défini"
+                            : "Non défini"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
 
-            {errors.vehicles && (
-              <span
-                className="text-xs text-red-600"
-                role="alert"
-                aria-live="polite"
-              >
-                {errors.vehicles.message}
-              </span>
+            {acc.vehicles.length === 0 && (
+              <div className="text-sm text-gray-500 text-center py-4">
+                Aucun véhicule ajouté
+              </div>
             )}
           </div>
 
@@ -720,22 +586,24 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
           {/* Bouton enregistrer */}
           <button
             type="submit"
-            disabled={isPending || !isDirty || !isValid}
+            disabled={isPending || !isValid}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#4F587E] text-white font-bold text-base shadow hover:bg-[#3B4252] transition mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-describedby={
-              !isDirty ? "no-changes" : !isValid ? "form-invalid" : undefined
-            }
           >
             <Save size={20} />
             {isPending ? "Enregistrement..." : "Enregistrer"}
           </button>
 
-          {/* Messages d'aide pour l'accessibilité */}
-          {!isDirty && (
-            <div id="no-changes" className="sr-only">
-              Aucune modification à enregistrer
+          {/* Debug des erreurs */}
+          {!isValid && (
+            <div className="text-xs text-red-600 bg-red-50 p-2 rounded border">
+              <strong>Erreurs de validation :</strong>
+              <pre className="text-xs mt-1">
+                {JSON.stringify(errors, null, 2)}
+              </pre>
             </div>
           )}
+
+          {/* Messages d'aide pour l'accessibilité */}
           {!isValid && (
             <div id="form-invalid" className="sr-only">
               Le formulaire contient des erreurs
@@ -785,12 +653,251 @@ export default function MobileAccreditationEditCard({ acc }: Props) {
                 <button
                   type="button"
                   onClick={() => {
-                    setValue("status", "ENTREE");
+                    setValue("status", "ENTREE", {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                    trigger("status");
                     setShowEntryConfirm(false);
                   }}
                   className="w-full px-4 py-3 rounded-xl bg-[#4F587E] text-white font-semibold shadow hover:bg-[#3B4252] transition"
                 >
                   Valider l&apos;entrée
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal d'édition de véhicule */}
+        {editingVehicle !== null && vehicleFormData && (
+          <div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vehicle-edit-title"
+          >
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 border border-gray-200 max-h-[90vh] overflow-y-auto">
+              <h2
+                id="vehicle-edit-title"
+                className="text-lg font-bold mb-4 text-gray-900"
+              >
+                Éditer le véhicule {editingVehicle + 1}
+              </h2>
+
+              <div className="space-y-4">
+                {/* Plaque */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Plaque
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleFormData.plate}
+                    onChange={(e) =>
+                      setVehicleFormData({
+                        ...vehicleFormData,
+                        plate: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm"
+                    placeholder="XX-123-YY"
+                  />
+                </div>
+
+                {/* Taille */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Taille
+                  </label>
+                  <select
+                    value={vehicleFormData.size}
+                    onChange={(e) =>
+                      setVehicleFormData({
+                        ...vehicleFormData,
+                        size: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm"
+                  >
+                    <option value="-10">-10</option>
+                    <option value="10-14">10-14</option>
+                    <option value="15-20">15-20</option>
+                    <option value="+20">+20</option>
+                  </select>
+                </div>
+
+                {/* Téléphone */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Indicatif
+                    </label>
+                    <input
+                      type="text"
+                      value={vehicleFormData.phoneCode}
+                      onChange={(e) =>
+                        setVehicleFormData({
+                          ...vehicleFormData,
+                          phoneCode: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm"
+                      placeholder="+33"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Numéro
+                    </label>
+                    <input
+                      type="text"
+                      value={vehicleFormData.phoneNumber}
+                      onChange={(e) =>
+                        setVehicleFormData({
+                          ...vehicleFormData,
+                          phoneNumber: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm"
+                      placeholder="123456789"
+                    />
+                  </div>
+                </div>
+
+                {/* Date et Heure */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      value={vehicleFormData.date}
+                      onChange={(e) =>
+                        setVehicleFormData({
+                          ...vehicleFormData,
+                          date: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Heure
+                    </label>
+                    <input
+                      type="time"
+                      value={vehicleFormData.time}
+                      onChange={(e) =>
+                        setVehicleFormData({
+                          ...vehicleFormData,
+                          time: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Ville */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ville
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleFormData.city}
+                    onChange={(e) =>
+                      setVehicleFormData({
+                        ...vehicleFormData,
+                        city: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F587E] text-sm"
+                    placeholder="Paris"
+                  />
+                </div>
+
+                {/* Déchargement */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Déchargement
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="edit-lat"
+                        checked={vehicleFormData.unloading.includes("lat")}
+                        onChange={(e) => {
+                          const newUnloading = e.target.checked
+                            ? [
+                                ...vehicleFormData.unloading.filter(
+                                  (v: string) => v !== "lat"
+                                ),
+                                "lat",
+                              ]
+                            : vehicleFormData.unloading.filter(
+                                (v: string) => v !== "lat"
+                              );
+                          setVehicleFormData({
+                            ...vehicleFormData,
+                            unloading: newUnloading,
+                          });
+                        }}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="edit-lat" className="text-sm">
+                        Latéral
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="edit-rear"
+                        checked={vehicleFormData.unloading.includes("rear")}
+                        onChange={(e) => {
+                          const newUnloading = e.target.checked
+                            ? [
+                                ...vehicleFormData.unloading.filter(
+                                  (v: string) => v !== "rear"
+                                ),
+                                "rear",
+                              ]
+                            : vehicleFormData.unloading.filter(
+                                (v: string) => v !== "rear"
+                              );
+                          setVehicleFormData({
+                            ...vehicleFormData,
+                            unloading: newUnloading,
+                          });
+                        }}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="edit-rear" className="text-sm">
+                        Arrière
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={handleCancelVehicleEdit}
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-400 bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition shadow"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveVehicleEdit}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[#4F587E] text-white font-semibold shadow hover:bg-[#3B4252] transition"
+                >
+                  Enregistrer
                 </button>
               </div>
             </div>

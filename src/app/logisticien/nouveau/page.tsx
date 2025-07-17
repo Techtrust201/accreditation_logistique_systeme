@@ -43,7 +43,7 @@ function LogisticienNewContent() {
       date: "",
       time: "",
       city: "",
-      unloading: ["arr"],
+      unloading: ["rear"],
     };
   }
 

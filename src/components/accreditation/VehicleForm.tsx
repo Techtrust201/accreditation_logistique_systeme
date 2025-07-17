@@ -3,6 +3,7 @@ import { useEffect, useId } from "react";
 import type { Vehicle } from "@/types";
 import CityAutocomplete from "@/components/CityAutocomplete";
 import Image from "next/image";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   data: Vehicle;
@@ -221,27 +222,25 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
       <div>
         <p className="text-sm font-semibold mb-2">Déchargement</p>
         <div className="flex gap-6 items-center">
-          <label className="inline-flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              name={`unload-arr-${uid}`}
-              value="arr"
-              checked={data.unloading.includes("arr")}
-              onChange={(e) => {
-                if (e.target.checked) {
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <Checkbox
+              checked={data.unloading.includes("rear")}
+              onCheckedChange={(checked) => {
+                if (checked) {
                   update({
                     unloading: Array.from(
-                      new Set([...(data.unloading || []), "arr"])
+                      new Set([...(data.unloading || []), "rear"])
                     ),
                   });
                 } else {
                   update({
                     unloading: (data.unloading || []).filter(
-                      (u) => u !== "arr"
+                      (u) => u !== "rear"
                     ),
                   });
                 }
               }}
+              id="unload-rear"
             />
             <Image
               src="/accreditation/pict_page2/Vector (5).svg"
@@ -249,17 +248,14 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
               height={24}
               className="w-7 h-6"
               alt="Arrière"
-            />{" "}
-            Arrière
+            />
+            <span>Arrière</span>
           </label>
-          <label className="inline-flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              name={`unload-lat-${uid}`}
-              value="lat"
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <Checkbox
               checked={data.unloading.includes("lat")}
-              onChange={(e) => {
-                if (e.target.checked) {
+              onCheckedChange={(checked) => {
+                if (checked) {
                   update({
                     unloading: Array.from(
                       new Set([...(data.unloading || []), "lat"])
@@ -273,6 +269,7 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
                   });
                 }
               }}
+              id="unload-lat"
             />
             <Image
               src="/accreditation/pict_page2/Vector (4).svg"
@@ -280,8 +277,8 @@ export default function VehicleForm({ data, update, onValidityChange }: Props) {
               height={24}
               className="w-6 h-6"
               alt="Latéral"
-            />{" "}
-            Latéral
+            />
+            <span>Latéral</span>
           </label>
         </div>
       </div>

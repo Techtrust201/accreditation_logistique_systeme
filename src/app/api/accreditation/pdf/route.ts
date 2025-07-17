@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
     } else if (typeof unloading === "string") {
       unloadingArr = unloading ? [unloading] : [];
     }
-    const map: Record<string, string> = { lat: "Latéral", arr: "Arrière" };
+    const map: Record<string, string> = { lat: "Latéral", rear: "Arrière" };
     unloadingLabel = unloadingArr.map((u) => map[u] || u).join(", ");
     addLabelVal("Déchargement par", unloadingLabel);
 

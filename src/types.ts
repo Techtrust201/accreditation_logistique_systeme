@@ -7,7 +7,7 @@ export interface Vehicle {
   date: string;
   time: string;
   city: string;
-  unloading: ("lat" | "arr")[];
+  unloading: ("lat" | "rear")[];
   kms?: string;
 }
 

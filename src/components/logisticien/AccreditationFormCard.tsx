@@ -43,7 +43,7 @@ export default function AccreditationFormCard({ acc }: Props) {
     date: "",
     time: "",
     city: "",
-    unloading: "lat" as Vehicle["unloading"],
+    unloading: ["lat"] as Vehicle["unloading"],
   });
 
   const [emailHistory, setEmailHistory] = useState<
@@ -162,7 +162,7 @@ export default function AccreditationFormCard({ acc }: Props) {
         date: "",
         time: "",
         city: "",
-        unloading: "lat",
+        unloading: ["lat"],
       });
       router.refresh();
       setHistoryVersion((v) => v + 1);
@@ -198,6 +198,27 @@ export default function AccreditationFormCard({ acc }: Props) {
       city: acc.vehicles[0]?.city || "",
     });
     router.push(`/logisticien/nouveau?${params.toString()}`);
+  };
+
+  // Ajout de la fonction pour les transitions métier
+  const getNextStatusOptions = (current: AccreditationStatus) => {
+    // Toujours inclure le statut actuel pour permettre de le voir
+    const allOptions = [
+      { value: "NOUVEAU", label: "Nouveau" },
+      { value: "ATTENTE", label: "Attente" },
+      { value: "ENTREE", label: "Entrée" },
+      { value: "SORTIE", label: "Sortie" },
+      { value: "REFUS", label: "Refusé" },
+      { value: "ABSENT", label: "Absent" },
+    ];
+
+    // Si le statut est SORTIE, on ne peut plus changer
+    if (current === "SORTIE") {
+      return allOptions.filter((option) => option.value === current);
+    }
+
+    // Pour tous les autres statuts, permettre tous les changements
+    return allOptions;
   };
 
   return (
@@ -266,7 +287,14 @@ export default function AccreditationFormCard({ acc }: Props) {
                         <td className="p-4 text-gray-700">{v.time}</td>
                         <td className="p-4 text-gray-700">{v.city}</td>
                         <td className="p-4 text-gray-700">
-                          {v.unloading === "lat" ? "Latéral" : "Arrière"}
+                          {v.unloading.includes("lat") &&
+                          v.unloading.includes("rear")
+                            ? "Latéral + Arrière"
+                            : v.unloading.includes("lat")
+                              ? "Latéral"
+                              : v.unloading.includes("rear")
+                                ? "Arrière"
+                                : "Non défini"}
                         </td>
                         <td className="p-4 flex gap-2">
                           <button
@@ -333,29 +361,10 @@ export default function AccreditationFormCard({ acc }: Props) {
             <div className="flex items-center gap-3">
               {status === "ENTREE" ? (
                 <select
-                  className="w-full h-10 rounded-lg md:rounded-xl border border-gray-400 px-3 md:px-4 focus:ring-2 focus:ring-[#4F587E] focus:border-[#4F587E] transition-all duration-200 bg-white text-sm md:text-base"
+                  className="w-full h-10 rounded-lg md:rounded-xl border border-gray-400 px-3 md:px-4 bg-gray-100 cursor-not-allowed text-gray-400 text-sm md:text-base"
                   value={status}
-                  onChange={async (e) => {
-                    const val = e.target.value as AccreditationStatus;
-                    if (val === "SORTIE") {
-                      // Appel API pour enregistrer la sortie
-                      const res = await fetch(`/api/accreditations/${acc.id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ status: "SORTIE" }),
-                      });
-                      if (res.ok) {
-                        setStatus("SORTIE");
-                        router.refresh();
-                      } else {
-                        alert("Erreur lors de la clôture de la présence");
-                      }
-                    }
-                  }}
+                  disabled
                 >
-                  <option value="ENTREE" disabled>
-                    Entrée
-                  </option>
                   <option value="SORTIE">Sortie</option>
                 </select>
               ) : status === "SORTIE" ? (
@@ -389,12 +398,15 @@ export default function AccreditationFormCard({ acc }: Props) {
                     }
                   }}
                 >
-                  <option value="NOUVEAU">Nouveau</option>
-                  <option value="ATTENTE">Attente</option>
-                  <option value="ENTREE">Entrée</option>
-                  <option value="SORTIE">Sortie</option>
-                  <option value="REFUS">Refus</option>
-                  <option value="ABSENT">Absent</option>
+                  {getNextStatusOptions(status).map((opt) => (
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                      disabled={opt.value === status}
+                    >
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               )}
               {status === "ENTREE" && (
