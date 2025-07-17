@@ -20,7 +20,7 @@ export default function StepTwo({ data, update, onValidityChange }: Props) {
       update({ ...data, unloading: ["rear"] });
       didInit.current = true;
     }
-  }, [data.unloading, update]);
+  }, [data, update]);
   useEffect(() => {
     const valid =
       !!data.plate &&
