@@ -361,10 +361,16 @@ export default function AccreditationFormCard({ acc }: Props) {
             <div className="flex items-center gap-3">
               {status === "ENTREE" ? (
                 <select
-                  className="w-full h-10 rounded-lg md:rounded-xl border border-gray-400 px-3 md:px-4 bg-gray-100 cursor-not-allowed text-gray-400 text-sm md:text-base"
+                  className="w-full h-10 rounded-lg md:rounded-xl border border-gray-400 px-3 md:px-4 focus:ring-2 focus:ring-[#4F587E] focus:border-[#4F587E] transition-all duration-200 bg-white text-sm md:text-base"
                   value={status}
-                  disabled
+                  onChange={(e) => {
+                    const val = e.target.value as AccreditationStatus;
+                    if (val === "SORTIE") {
+                      setStatus("SORTIE");
+                    }
+                  }}
                 >
+                  <option value="ENTREE">Entrée</option>
                   <option value="SORTIE">Sortie</option>
                 </select>
               ) : status === "SORTIE" ? (
