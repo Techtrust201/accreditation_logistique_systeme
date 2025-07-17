@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function StepTwo({ data, update, onValidityChange }: Props) {
-  // Initialisation par défaut : si unloading est vide, on force ['rear'] (une seule fois)
+  // Initialisation par défaut, si unloading est vide, on force ['rear'] (une seule fois)
   const didInit = useRef(false);
   useEffect(() => {
     if (
