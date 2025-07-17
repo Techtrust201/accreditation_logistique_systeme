@@ -177,6 +177,18 @@ export async function PATCH(
         }),
       });
     }
+    // Historique véhicules (trace brute, améliorable)
+    changes.push(
+      addHistoryEntry(
+        createInfoUpdatedEntry(
+          accreditationId,
+          "vehicles",
+          JSON.stringify(acc.vehicles),
+          JSON.stringify(vehicles),
+          "system"
+        )
+      )
+    );
   }
 
   // renvoi de la version à jour

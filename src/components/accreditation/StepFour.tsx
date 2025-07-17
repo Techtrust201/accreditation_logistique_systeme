@@ -61,22 +61,12 @@ export default function StepFour({ data, onReset }: Props) {
   async function downloadPdf() {
     try {
       setLoading(true);
-      const saveRes = await fetch("/api/accreditations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!saveRes.ok) throw new Error("Erreur enregistrement");
-      const created = await saveRes.json();
       const res = await fetch("/api/accreditation/pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          id: created.id,
-          status: created.status,
-          entryAt: created.entryAt,
-          exitAt: created.exitAt,
+          status: "NOUVEAU", // ou "ATTENTE" selon le besoin métier
         }),
       });
       if (!res.ok) throw new Error("Erreur génération PDF");
