@@ -129,7 +129,7 @@ export default function LogisticienLayout({
                 >
                   <Image
                     src="/logisticien/Group%201%20(1).svg"
-                    width={16}
+                    width={22}
                     height={16}
                     alt=""
                   />
